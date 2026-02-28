@@ -1,0 +1,250 @@
+{% extends 'base.html' %}
+{% block title %}Tone Check | Social Sandbox{% endblock %}
+{% block head_extra %}
+<style>
+    .tone-meter {
+        display: flex;
+        gap: 0.5rem;
+        margin: 1rem 0;
+    }
+    
+    .tone-indicator {
+        flex: 1;
+        height: 8px;
+        border-radius: 4px;
+        background: rgba(255, 255, 255, 0.1);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+    
+    .tone-indicator.active {
+        background: currentColor;
+    }
+    
+    .metric-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.75rem;
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 6px;
+        margin: 0.5rem 0;
+    }
+    
+    .metric-label {
+        font-size: 0.875rem;
+        color: rgba(255, 255, 255, 0.7);
+    }
+    
+    .metric-value {
+        font-weight: bold;
+        font-size: 1.125rem;
+    }
+    
+    @keyframes pulse-recording {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.5; }
+    }
+    
+    .recording-pulse {
+        animation: pulse-recording 1s infinite;
+    }
+</style>
+{% endblock %}
+{% block content %}
+{% include '_nav.html' %}
+
+<main class="flex-1 flex flex-col items-center justify-center p-6 relative">
+    
+    <!-- Warning & Consent Screen -->
+    <div id="warning-screen" class="glass-panel rounded-xl p-8 max-w-2xl w-full relative z-10">
+        <div class="mb-6 text-center">
+            <i class="fa-solid fa-triangle-exclamation text-5xl text-amber-400 mb-4"></i>
+        </div>
+        <h2 class="text-2xl font-bold mb-4 text-white text-center">Content Warning</h2>
+        <div class="bg-amber-900/30 border border-amber-700/50 rounded-lg p-5 mb-6 space-y-3">
+            <p class="text-sm text-amber-100">
+                <strong>Module 5: Tone Check</strong> simulates a high-stress workplace conflict scenario. This module:
+            </p>
+            <ul class="text-sm text-amber-100 space-y-2 ml-4">
+                <li>✓ Uses realistic audio of an upset manager</li>
+                <li>✓ Requires you to respond under emotional pressure</li>
+                <li>✓ Is designed to build resilience and emotional regulation</li>
+                <li>✓ May feel stressful or uncomfortable at first</li>
+            </ul>
+            <p class="text-sm text-amber-200 mt-4">
+                <strong>This is not meant to upset you permanently—it's practice for real situations.
+
+</strong>
+            </p>
+        </div>
+        <div class="bg-blue-900/20 border border-blue-700/30 rounded-lg p-4 mb-6">
+            <p class="text-sm text-blue-200">
+                <i class="fa-solid fa-info-circle mr-2"></i>
+                <strong>Neurodivergent-Friendly:</strong> You can pause or exit at any time. There's no time limit. Take deep breaths.
+            </p>
+        </div>
+        <div class="flex gap-3 justify-center">
+            <button id="decline-btn" onclick="window.location.href='/modules'" class="px-6 py-3 bg-slate-700 hover:bg-slate-600 text-white rounded-lg font-mono text-sm transition-colors">
+                <i class="fa-solid fa-times mr-2"></i>Not Ready
+            </button>
+            <button id="accept-btn" class="px-6 py-3 bg-rose-600 hover:bg-rose-500 text-white rounded-lg font-mono text-sm transition-colors">
+                <i class="fa-solid fa-check mr-2"></i>I Understand, Continue
+            </button>
+        </div>
+    </div>
+    
+    <!-- XP Gate Check (Initially hidden, shown if locked) -->
+    <div id="locked-state" class="hidden glass-panel rounded-xl p-8 max-w-2xl w-full text-center relative z-10">
+        <div class="mb-6">
+            <i class="fa-solid fa-lock text-6xl text-amber-400 mb-4"></i>
+        </div>
+        <h2 class="text-2xl font-bold mb-3 text-white">Module Locked</h2>
+        <p class="text-slate-400 mb-4">Module 5: Tone Check is an advanced conflict resolution module designed for experienced learners.</p>
+        <div class="bg-amber-900/30 border border-amber-700/50 rounded-lg p-4 mb-6">
+            <p class="text-sm text-amber-200 font-mono">
+                <span class="block">Required XP: <span class="font-bold">5,000</span></span>
+                <span class="block">Your XP: <span id="locked-xp" class="font-bold">0</span></span>
+            </p>
+        </div>
+        <p class="text-sm text-slate-400">Complete other modules to earn XP and unlock this advanced training.</p>
+    </div>
+
+    <!-- Main Content (Unlocked State) -->
+    <div id="module-content" class="hidden w-full max-w-4xl relative z-10">
+        
+        <!-- Scenario Card -->
+        <div class="glass-panel rounded-xl p-6 mb-12 text-center relative">
+            <div class="absolute -top-3 left-1/2 -translate-x-1/2 bg-rose-900 text-rose-300 px-3 py-1 rounded-full text-xs font-mono border border-rose-500/50 shadow-[0_0_10px_rgba(244,63,94,0.3)]">
+                MODULE 5: TONE CHECK
+            </div>
+            <h2 class="text-2xl font-bold mb-2 text-white">Emotional Regulation Under Pressure</h2>
+            <p class="text-slate-400 text-sm leading-relaxed mb-4">
+                Your manager is upset about a missed deadline. Respond professionally while setting healthy boundaries. Pay attention to your tone, composure, and delivery.
+            </p>
+            <div class="bg-rose-900/20 border border-rose-700/30 rounded-lg p-4">
+                <p class="text-sm text-rose-200 italic font-mono leading-relaxed" id="scenario-text">
+                    <i class="fa-solid fa-play text-rose-400 mr-2"></i>
+                    <span id="boss-message">Click "Start Scenario" to hear David's message...</span>
+                </p>
+            </div>
+        </div>
+
+        <!-- Two-Column Layout -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            
+            <!-- Left: Boss Audio + Response -->
+            <div class="lg:col-span-2 space-y-6">
+                
+                <!-- Boss Audio Player -->
+                <div class="glass-panel rounded-xl p-6">
+                    <h3 class="text-sm font-mono text-rose-400 mb-4 uppercase tracking-widest flex items-center gap-2">
+                        <i class="fa-solid fa-briefcase"></i>David (Your Manager)
+                    </h3>
+                    <div id="boss-audio-container" class="space-y-4">
+                        <div class="text-center">
+                            <button id="start-scenario-btn" class="px-6 py-3 bg-rose-600 hover:bg-rose-500 text-white rounded-lg font-mono text-sm transition-colors">
+                                <i class="fa-solid fa-play mr-2"></i>Start Scenario
+                            </button>
+                        </div>
+                        <audio id="boss-audio" controls class="hidden w-full" style="display: none;">
+                            Your browser does not support the audio element.
+                        </audio>
+                    </div>
+                </div>
+
+                <!-- User Response Recording -->
+                <div class="glass-panel rounded-xl p-6">
+                    <h3 class="text-sm font-mono text-cyan-400 mb-4 uppercase tracking-widest flex items-center gap-2">
+                        <i class="fa-solid fa-microphone"></i>Your Response
+                    </h3>
+                    <div class="flex flex-col items-center gap-4">
+                        <button id="record-btn" class="w-32 h-32 rounded-full bg-slate-900 border-4 border-slate-700 flex flex-col items-center justify-center text-slate-400 transition-all hover:border-cyan-500 hover:text-cyan-400">
+                            <i id="record-icon" class="fa-solid fa-microphone text-3xl mb-2"></i>
+                            <span id="record-text" class="text-xs font-mono uppercase tracking-widest font-bold">Hold & Speak</span>
+                        </button>
+                        <div id="timer-display" class="text-2xl font-mono text-cyan-400 font-bold opacity-0 transition-opacity">
+                            00:00
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Response Audio Playback -->
+                <div id="response-audio-container" class="glass-panel rounded-xl p-6 hidden">
+                    <h3 class="text-sm font-mono text-emerald-400 mb-4 uppercase tracking-widest flex items-center gap-2">
+                        <i class="fa-solid fa-thumbs-up"></i>Boss's Reply
+                    </h3>
+                    <audio id="response-audio" controls class="w-full">
+                        Your browser does not support the audio element.
+                    </audio>
+                </div>
+            </div>
+
+            <!-- Right: Analysis & Metrics -->
+            <div class="glass-panel rounded-xl p-6 flex flex-col h-fit">
+                <h3 class="text-sm font-mono text-slate-400 mb-4 uppercase tracking-wider flex items-center gap-2">
+                    <i class="fa-solid fa-chart-pie text-cyan-400"></i>Analysis
+                </h3>
+                
+                <div id="analysis-placeholder" class="flex-1 flex flex-col justify-center text-slate-400 text-center">
+                    <p class="text-sm text-slate-500">Respond to the scenario to see analysis...</p>
+                </div>
+
+                <div id="analysis-results" class="hidden space-y-3">
+                    <!-- Score Display -->
+                    <div class="metric-row">
+                        <span class="metric-label">Overall Score</span>
+                        <span id="score-display" class="metric-value text-emerald-400">--</span>
+                    </div>
+
+                    <!-- Tone Indicator -->
+                    <div>
+                        <span class="metric-label text-xs">Detected Tone</span>
+                        <p id="tone-display" class="text-sm text-slate-300 mt-1">--</p>
+                    </div>
+
+                    <!-- Detailed Metrics -->
+                    <div class="border-t border-white/10 pt-3 mt-3">
+                        <div class="metric-row">
+                            <span class="metric-label">Professionalism</span>
+                            <span id="professionalism-display" class="metric-value text-blue-400">--</span>
+                        </div>
+                        <div class="metric-row">
+                            <span class="metric-label">Boundary Setting</span>
+                            <span id="boundary-display" class="metric-value text-purple-400">--</span>
+                        </div>
+                        <div class="metric-row">
+                            <span class="metric-label">Vocal Composure</span>
+                            <span id="composure-display" class="metric-value text-amber-400">--</span>
+                        </div>
+                    </div>
+
+                    <!-- Feedback -->
+                    <div class="border-t border-white/10 pt-3 mt-3">
+                        <p class="text-xs text-slate-500 mb-2 uppercase tracking-wide">Feedback</p>
+                        <p id="feedback-display" class="text-sm text-slate-300 leading-relaxed"></p>
+                    </div>
+
+                    <!-- XP Awarded -->
+                    <div class="border-t border-white/10 pt-3 mt-3 bg-emerald-900/20 rounded p-2">
+                        <span class="text-xs text-slate-500">XP Awarded: </span>
+                        <span id="xp-display" class="text-lg font-bold text-emerald-400">+0</span>
+                    </div>
+
+                    <!-- Resolution Status -->
+                    <div id="resolution-status" class="hidden border-t border-white/10 pt-3 mt-3">
+                        <p id="resolution-text" class="text-sm font-bold text-emerald-400"></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Ambient Background Glow -->
+    <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-rose-600/5 rounded-full blur-[100px] pointer-events-none z-0"></div>
+</main>
+{% endblock %}
+{% block scripts %}
+<script src="/static/js/backend.js"></script>
+<script src="/static/js/module5.js"></script>
+{% endblock %}

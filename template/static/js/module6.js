@@ -43,6 +43,8 @@ let isCurrentlySpeaking = false;
 // Initialize Web Speech API
 if ('webkitSpeechRecognition' in window) {
     recognition = new webkitSpeechRecognition();
+
+    // Allows filler words to be picked up by the js and browser
     recognition.continuous = true;
     recognition.interimResults = true;
 
