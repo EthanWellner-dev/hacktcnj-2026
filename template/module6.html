@@ -1,0 +1,98 @@
+{% extends 'base.html' %}
+{% block title %}The Pitch | Social Sandbox{% endblock %}
+{% block head_extra %}
+<style>
+    /* module‑specific styles already in style.css, nothing else needed here */
+</style>
+{% endblock %}
+{% block content %}
+<nav class="w-full border-b border-white/10 bg-slate-900/50 backdrop-blur-md px-6 py-4 flex justify-between items-center z-10">
+    <div class="flex items-center gap-3">
+        <div class="w-8 h-8 rounded bg-gradient-to-br from-cyan-400 to-blue-600 flex items-center justify-center shadow-[0_0_10px_rgba(6,182,212,0.5)]">
+            <i class="fa-solid fa-cube text-white text-sm"></i>
+        </div>
+        <h1 class="font-bold tracking-wider text-sm uppercase text-slate-300">Social Sandbox <span class="text-cyan-400 font-mono text-xs ml-2">v0.1.0-MVP</span></h1>
+    </div>
+    <div class="flex items-center gap-6">
+        <div class="font-mono text-sm">
+            <span class="text-slate-400">XP:</span> <span id="user-xp" class="text-emerald-400 font-bold">0</span>
+        </div>
+        <button onclick="window.location.href='/modules'" class="text-slate-400 hover:text-white text-sm transition-colors border border-white/10 rounded px-3 py-1 bg-slate-800/50">
+            <i class="fa-solid fa-arrow-left mr-2"></i>Lounge
+        </button>
+    </div>
+</nav>
+
+<main class="flex-1 flex flex-col items-center justify-center p-6 relative">
+    
+    <!-- Scenario Card -->
+    <div class="glass-panel rounded-xl p-6 max-w-2xl w-full mb-12 text-center relative z-10">
+        <div class="absolute -top-3 left-1/2 -translate-x-1/2 bg-cyan-900 text-cyan-300 px-3 py-1 rounded-full text-xs font-mono border border-cyan-500/50 shadow-[0_0_10px_rgba(6,182,212,0.3)]">
+            MODULE 6: THE PITCH
+        </div>
+        <h2 class="text-2xl font-bold mb-2">Confidence Calibration</h2>
+        <p class="text-slate-400 text-sm leading-relaxed">
+            <span class="text-white font-semibold">Scenario:</span> You are introducing yourself to a senior developer at a networking event. Deliver your 30-second elevator pitch. The system will monitor your vocal pauses and filler words.
+        </p>
+    </div>
+
+    <!-- The Action Center -->
+    <div class="flex flex-col items-center w-full max-w-3xl relative z-10">
+        
+        <!-- Live Confidence Meter -->
+        <div class="w-full mb-8 px-8">
+            <div class="flex justify-between font-mono text-xs mb-2">
+                <span class="text-slate-400">Confidence Score</span>
+                <span id="confidence-text" class="text-emerald-400 font-bold">100%</span>
+            </div>
+            <div class="w-full bg-slate-800 rounded-full h-3 border border-white/5 overflow-hidden">
+                <div id="confidence-bar" class="bg-gradient-to-r from-emerald-500 to-cyan-400 h-full rounded-full transition-all duration-300 ease-out shadow-[0_0_10px_rgba(52,211,153,0.5)]" style="width: 100%"></div>
+            </div>
+            
+            <!-- Penalty Counters -->
+            <div class="flex justify-between mt-3 font-mono text-[10px] text-slate-500 uppercase tracking-widest">
+                <div id="filler-counter" class="transition-colors">Filler Words (Um/Uh): <span class="text-white">0</span></div>
+                <div id="pause-counter" class="transition-colors">Hesitations (>1.5s): <span class="text-white">0</span></div>
+            </div>
+        </div>
+
+        <!-- The Big Button -->
+        <button id="mic-btn" class="w-40 h-40 rounded-full bg-slate-900 border-4 border-slate-700 flex flex-col items-center justify-center text-slate-400 transition-all duration-200 select-none cursor-pointer focus:outline-none z-20">
+            <i id="mic-icon" class="fa-solid fa-microphone text-4xl mb-2 transition-colors duration-200"></i>
+            <span id="mic-text" class="text-xs font-mono uppercase tracking-widest font-bold">Tap to Start</span>
+        </button>
+
+        <!-- Timer Display -->
+        <div id="timer-display" class="mt-6 text-3xl font-mono text-cyan-400 font-bold opacity-0 transition-opacity duration-300 z-20">
+            00:00
+        </div>
+
+        <!-- Live Transcript -->
+        <div class="w-full mt-4">
+            <div id="transcript-box" class="glass-panel rounded-lg p-4 min-h-[100px] font-mono text-sm text-slate-300 transition-colors hidden">
+                <span class="text-slate-500 italic">Listening...</span>
+            </div>
+        </div>
+
+        <!-- AI Feedback Panel (Hidden initially) -->
+        <div id="feedback-panel" class="w-full mt-6 glass-panel border-cyan-500/30 rounded-lg p-5 hidden">
+            <div class="flex items-center gap-2 mb-3">
+                <i class="fa-solid fa-robot text-cyan-400"></i>
+                <h3 class="font-bold text-cyan-400 font-mono text-sm">LLaMA 3 Analysis</h3>
+            </div>
+            <p id="feedback-text" class="text-sm text-slate-300 leading-relaxed"></p>
+            <div class="mt-4 pt-4 border-t border-white/10 flex justify-between items-center">
+                <span class="text-xs font-mono text-slate-400">XP Awarded: <span id="xp-award" class="text-emerald-400">+0</span></span>
+                <button onclick="window.location.reload()" class="text-xs bg-cyan-900/50 hover:bg-cyan-800 text-cyan-300 px-3 py-1 rounded transition-colors border border-cyan-700">Retry Pitch</button>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Ambient Background Glow -->
+    <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-cyan-600/5 rounded-full blur-[100px] pointer-events-none z-0"></div>
+</main>
+{% endblock %}
+{% block scripts %}
+<script src="/static/js/module6.js"></script>
+{% endblock %}

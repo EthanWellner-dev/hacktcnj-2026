@@ -87,6 +87,8 @@ Privacy First: By bypassing standard OpenAI wrappers and running LLaMA 3 locally
    ```
    The Flask API will start on `http://127.0.0.1:5000` and also serve the static front-end.  It now supports `/api/users/signup`, `/api/users/login` (both POST with json `{username,password,persona}`) and `/api/users/leaderboard`.  The UI has separate pages: `/` for login, `/dashboard` for the user lounge (logout is top‑right), and `/modules` for the module directory.  The dashboard no longer shows sensitive cluster info and logout lives in the header.
 
+   Additional endpoints have been added for the training modules themselves.  Module 6 ("The Pitch") is available at `/module6` – the page performs speech-to-text scoring and when the user completes a run it POSTs to `/api/module6/complete` with an `xp` value.  The backend verifies the JWT, increments the user's XP, and returns the updated total.  Future modules can follow this same pattern (`/api/modules/<id>/complete`).
+
 2. **Frontend** – the HTML/JS lives in the `template/` folder. Open `http://127.0.0.1:5000/` in a browser after the backend is running. The initial page provides a login/signup form and leaderboard.  Further UI modules will be built in this directory.
 
 ### Running tests
