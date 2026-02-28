@@ -28,18 +28,76 @@
         </div>
         <br>
         <button id="btn-modules" class="btn-neon px-3 py-2 rounded-xl">Browse Modules</button>
-
       </section>
 
-      <!-- Replace this with a script that makes Right column: main UI area / gym placeholders
-      <section class="p-4 bg-slate-900/40 rounded-xl">
-        <div id="gym-area">
-          <h4 class="text-slate-100 font-medium">Welcome to the Lounge</h4>
-          <p class="text-slate-400 text-sm">Select a gym to begin training.</p>
-        </div>
-      </section>
+      <!-- line 34: show a positivity quote (50 possible messages) -->
+      <script>
+        const mainGrid = document.querySelector('main.grid');
+        const quotes = [
+          "Believe you can and you're halfway there.",
+          "Every day is a second chance.",
+          "Stay positive, work hard, make it happen.",
+          "The best way out is always through.",
+          "You are stronger than you think.",
+          "Keep going – your future self will thank you.",
+          "Fall seven times, stand up eight.",
+          "Dream big and dare to fail.",
+          "The harder you work, the luckier you get.",
+          "Don't watch the clock; do what it does. Keep going.",
+          "Act as if what you do makes a difference. It does.",
+          "Success is the sum of small efforts repeated.",
+          "Start where you are. Use what you have. Do what you can.",
+          "Your only limit is your mind.",
+          "Positive mind. Positive vibes. Positive life.",
+          "You miss 100% of the shots you don't take.",
+          "Difficult roads often lead to beautiful destinations.",
+          "The only time you fail is when you fall down and stay down.",
+          "Strive for progress, not perfection.",
+          "Hustle until your haters ask if you're hiring.",
+          "Make today so awesome yesterday gets jealous.",
+          "Stay humble. Work hard. Be kind.",
+          "The secret of getting ahead is getting started.",
+          "You don't have to be great to start, but you have to start to be great.",
+          "Little by little, a little becomes a lot.",
+          "Don't stop until you're proud.",
+          "Be a voice, not an echo.",
+          "The best view comes after the hardest climb.",
+          "Don't count the days; make the days count.",
+          "Opportunities don't happen. You create them.",
+          "What you get by achieving your goals is not as important as what you become by achieving your goals.",
+          "Success doesn't come to you, you go to it.",
+          "The only place where success comes before work is in the dictionary.",
+          "Your vibe attracts your tribe.",
+          "Keep your face always toward the sunshine—and shadows will fall behind you.",
+          "Believe in yourself a little more.",
+          "You are capable of amazing things.",
+          "Positive thoughts lead to positive results.",
+          "Enjoy the little things, for one day you may look back and realize they were the big things.",
+          "You are your only limit.",
+          "The sun himself is weak when he first rises, and gathers strength as the day goes on.",
+          "You were born to be real, not perfect.",
+          "Stay patient and trust your journey.",
+          "If it doesn't challenge you, it won't change you.",
+          "Don't be afraid to give up the good to go for the great.",
+          "The future depends on what you do today.",
+          "Be so good they can't ignore you.",
+          "Your greatest asset is your enthusiasm.",
+          "Keep your eyes on the stars, and your feet on the ground.",
+          "Let your smile change the world, but don't let the world change your smile."
+        ];
+        const quote = quotes[Math.floor(Math.random() * quotes.length)];
+
+        const rightSection = document.createElement('section');
+        rightSection.className = 'p-4 bg-slate-900/40 rounded-xl';
+        rightSection.innerHTML = `
+          <div id="gym-area">
+            <h4 class="text-slate-100 font-medium">Motivational Quote</h4>
+            <p class="text-slate-400 text-sm">${quote}</p>
+          </div>
+        `;
+        mainGrid.appendChild(rightSection);
+      </script>
     </main>
-    --> 
   </div>
 </div>
 {% endblock %}
