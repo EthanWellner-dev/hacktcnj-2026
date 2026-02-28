@@ -177,12 +177,6 @@ def modules_page():
     return render_template('modules.html')
 
 
-@app.route('/module6')
-def module6_page():
-    # serve the new confidence calibration pitch exercise
-    return render_template('module6.html')
-
-
 @app.route('/module1')
 def module1_page():
     return render_template('module1.html')
@@ -202,7 +196,10 @@ def module3_page():
 def module4_page():
     return render_template('module4.html')
 
-
+@app.route('/module6')
+def module6_page():
+    # serve the new confidence calibration pitch exercise
+    return render_template('module6.html')
 
 @app.route('/api/module6/complete', methods=['POST'])
 def module6_complete():
@@ -267,6 +264,10 @@ def login():
         "token": token
     })
 
+@app.route('/module8')
+def module8_page():
+    # serve the new masking mirror exercise
+    return render_template('module8.html')
 
 @app.route('/api/users/leaderboard', methods=['GET'])
 def leaderboard():
