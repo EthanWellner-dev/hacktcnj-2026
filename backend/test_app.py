@@ -101,6 +101,42 @@ def test_module6_xp_award(monkeypatch):
     assert resp4.status_code == 400
 
 
+def test_training_submit_records_results(monkeypatch):
+    client = app.test_client()
+    # create and login user
+    client.post('/api/users/signup', json={
+        'username': 'eve',
+        'password': 'xyz',
+        'persona': 'tester'
+    })
+    login_resp = client.post('/api/users/login', json={
+        'username': 'eve',
+        'password': 'xyz'
+    })
+    token = login_resp.get_json().get('token')
+    assert token
+
+    # send training result without xp
+    resp = client.post('/api/training/submit', json={'module': 'foo', 'results': {'foo': 'bar'}}, headers={'Authorization': f'Bearer {token}'})
+    assert resp.status_code == 200
+    data = resp.get_json()
+    assert data['status'] == 'success'
+    assert data['xp'] == 0
+
+    # send with xp and some metrics
+    resp2 = client.post('/api/training/submit', json={'module': 'foo', 'results': {'xp': 15, 'confidence': 80}}, headers={'Authorization': f'Bearer {token}'})
+    assert resp2.status_code == 200
+    data2 = resp2.get_json()
+    assert data2['status'] == 'success'
+    assert data2['xp'] == 15
+
+    # bad payloads
+    resp3 = client.post('/api/training/submit', json={'module': '', 'results': {}}, headers={'Authorization': f'Bearer {token}'})
+    assert resp3.status_code == 400
+    resp4 = client.post('/api/training/submit', json={'module': 'foo', 'results': 'notadict'}, headers={'Authorization': f'Bearer {token}'})
+    assert resp4.status_code == 400
+
+
 def test_module6_page_renders():
     client = app.test_client()
     resp = client.get('/module6')

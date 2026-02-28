@@ -1,44 +1,9 @@
 // module6.js handles the pitch exercise, xp display, and backend recording
+// the reusable backend helpers are loaded via backend.js and attached to
+// `window.backend`.
 
-// --- utility from dashboard.js ---
-async function fetchMe() {
-    const token = localStorage.getItem('ss_token');
-    if (!token) return window.location.href = '/';
-    try {
-        const resp = await fetch('/api/users/me', {
-            headers: { 'Authorization': 'Bearer ' + token }
-        });
-        if (!resp.ok) throw new Error('not authorized');
-        const data = await resp.json();
-        document.getElementById('user-xp').textContent = data.xp || 0;
-        return data;
-    } catch (err) {
-        console.error(err);
-        localStorage.removeItem('ss_token');
-        return window.location.href = '/';
-    }
-}
-
-// function to report xp gain to backend and update header
-async function awardXP(amount) {
-    const token = localStorage.getItem('ss_token');
-    if (!token) return;
-    try {
-        const resp = await fetch('/api/module6/complete', {
-            method: 'POST',
-            headers: {
-                'Authorization': 'Bearer ' + token,
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ xp: amount })
-        });
-        if (!resp.ok) throw new Error('xp update failed');
-        const data = await resp.json();
-        document.getElementById('user-xp').textContent = data.xp || 0;
-    } catch (e) {
-        console.error(e);
-    }
-}
+// we still keep a handful of local state variables but all communication
+// with the server goes through window.backend.
 
 // --- the rest of the script copied/adapted from the provided HTML sample ---
 
@@ -51,6 +16,7 @@ let hesitationCount = 0;
 let fullTranscript = "";
 let pitchTimer = null;
 let timeRemaining = 0;
+let pitchDuration = 0; // length of the pitch session (calculated from xp)
         
 // --- DOM Elements ---
 const micBtn = document.getElementById('mic-btn');
@@ -250,7 +216,7 @@ async function startRecording() {
         const xpText = document.getElementById('user-xp').innerText.replace(/,/g, '');
         const xp = parseInt(xpText) || 0;
         // Formula: Base 20s + 1s per 100 XP, capped at 45s
-        const pitchDuration = Math.min(45, Math.max(20, 20 + Math.floor(xp / 100)));
+        pitchDuration = Math.min(45, Math.max(20, 20 + Math.floor(xp / 100)));
         timeRemaining = pitchDuration;
         
         timerDisplay.innerText = `00:${timeRemaining.toString().padStart(2, '0')}`;
@@ -340,10 +306,22 @@ function analyzePitch() {
         
         feedbackText.innerText = feedback;
         
-        // award xp (hardcoded +50 for MVP)
-        const xpGain = 50;
+        // calculate xp gain based on performance and duration
+        // formula: proportion of confidence * allowed duration, penalised by
+        // filler words & hesitations, minimum 5xp
+        let xpGain = Math.round((confidenceScore / 100) * pitchDuration);
+        xpGain -= fillerCount * 2;
+        xpGain -= hesitationCount * 5;
+        xpGain = Math.max(5, xpGain);
         xpAwardSpan.textContent = `+${xpGain}`;
-        await awardXP(xpGain);
+        // send detailed results to backend and let it update xp
+        await backend.submitTrainingResults('module6', {
+            xp: xpGain,
+            confidence: confidenceScore,
+            filler: fillerCount,
+            hesitation: hesitationCount,
+            duration: pitchDuration
+        });
         
     }, 2000);
 }
@@ -360,4 +338,4 @@ micBtn.addEventListener('click', (e) => {
 });
 
 // populate initial XP
-fetchMe();
+backend.fetchMe();
