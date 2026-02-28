@@ -1,363 +1,257 @@
-// module6.js handles the pitch exercise, xp display, and backend recording
+const scenarios = [
+    {
+        title: "The Monologue",
+        desc: "A coworker is explaining their 400-slide vacation deck. You need to look 'Politely Interested' but not overly excited.",
+        target: "Neutral",
+        failMsg: "Your face dropped. You looked bored, which is a social death sentence."
+    },
+    {
+        title: "The Passive Aggressive Remark",
+        desc: "A peer just made a backhanded compliment. Maintain a 'Professional Composure' without scowling.",
+        target: "Unfazed",
+        failMsg: "Your brow furrowed! Keep it steady next time."
+    },
+    {
+        title: "The Bad Joke",
+        desc: "The CEO just told a joke that wasn't funny. Maintain a 'Mild, Supportive Smile' without bursting into fake laughter.",
+        target: "Steady Smile",
+        failMsg: "You lost the smile. Now it looks like you're judging them."
+    }
+];
 
-// --- utility from dashboard.js ---
-async function fetchMe() {
-    const token = localStorage.getItem('ss_token');
-    if (!token) return window.location.href = '/';
+let currentScenarioIdx = 0;
+let faceMesh;
+let video, startBtn, nextBtn, timerBar, statusOverlay, statusText, videoWrapper, feedbackPanel, feedbackText;
+let isChallenging = false;
+let challengeStartTime = 0;
+const CHALLENGE_DURATION = 3000; 
+
+async function init() {
+    video = document.getElementById("webcam");
+    startBtn = document.getElementById("start-btn");
+    nextBtn = document.getElementById("next-btn");
+    timerBar = document.getElementById("timer-bar");
+    statusOverlay = document.getElementById("status-overlay");
+    statusText = document.getElementById("status-text");
+    videoWrapper = document.getElementById("video-wrapper");
+    feedbackPanel = document.getElementById("feedback-panel");
+    feedbackText = document.getElementById("feedback-text");
+
+    if (!video || !startBtn || !nextBtn) return;
+
     try {
-        const resp = await fetch('/api/users/me', {
-            headers: { 'Authorization': 'Bearer ' + token }
+        updateScenarioUI();
+
+        let mpFaceMesh = null;
+        for (let i = 0; i < 50; i++) {
+            if (window.FaceMesh) {
+                mpFaceMesh = window.FaceMesh;
+                break;
+            }
+            await new Promise(r => setTimeout(r, 200));
+        }
+
+        if (!mpFaceMesh) {
+            throw new Error("MediaPipe libraries failed to load.");
+        }
+
+        faceMesh = new mpFaceMesh({
+            locateFile: (file) => {
+                return `https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/${file}`;
+            }
         });
-        if (!resp.ok) throw new Error('not authorized');
-        const data = await resp.json();
-        document.getElementById('user-xp').textContent = data.xp || 0;
-        return data;
+
+        faceMesh.setOptions({
+            maxNumFaces: 1,
+            refineLandmarks: true,
+            minDetectionConfidence: 0.5,
+            minTrackingConfidence: 0.5
+        });
+
+        faceMesh.onResults(onResults);
+        
+        setupWebcam();
+        
+        startBtn.addEventListener("click", startChallenge);
+        nextBtn.addEventListener("click", () => {
+            currentScenarioIdx = (currentScenarioIdx + 1) % scenarios.length;
+            updateScenarioUI();
+        });
     } catch (err) {
-        console.error(err);
-        localStorage.removeItem('ss_token');
-        return window.location.href = '/';
-    }
-}
-
-// function to report xp gain to backend and update header
-async function awardXP(amount) {
-    const token = localStorage.getItem('ss_token');
-    if (!token) return;
-    try {
-        const resp = await fetch('/api/module6/complete', {
-            method: 'POST',
-            headers: {
-                'Authorization': 'Bearer ' + token,
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ xp: amount })
-        });
-        if (!resp.ok) throw new Error('xp update failed');
-        const data = await resp.json();
-        document.getElementById('user-xp').textContent = data.xp || 0;
-    } catch (e) {
-        console.error(e);
-    }
-}
-
-// --- the rest of the script copied/adapted from the provided HTML sample ---
-
-// --- State Variables ---
-let isRecording = false;
-let isRecognizing = false; // Add explicit tracker for Speech API state
-let confidenceScore = 100;
-let fillerCount = 0;
-let hesitationCount = 0;
-let fullTranscript = "";
-let pitchTimer = null;
-let timeRemaining = 0;
-        
-// --- DOM Elements ---
-const micBtn = document.getElementById('mic-btn');
-const micIcon = document.getElementById('mic-icon');
-const micText = document.getElementById('mic-text');
-const confidenceBar = document.getElementById('confidence-bar');
-const confidenceText = document.getElementById('confidence-text');
-const fillerCounter = document.getElementById('filler-counter');
-const pauseCounter = document.getElementById('pause-counter');
-const transcriptBox = document.getElementById('transcript-box');
-const feedbackPanel = document.getElementById('feedback-panel');
-const feedbackText = document.getElementById('feedback-text');
-const timerDisplay = document.getElementById('timer-display');
-const xpAwardSpan = document.getElementById('xp-award');
-
-// --- APIs & Audio Context ---
-let recognition = null;
-let audioContext = null;
-let mediaStreamSource = null;
-let scriptProcessor = null;
-let silenceTimer = null;
-let isCurrentlySpeaking = false;
-
-// Initialize Web Speech API
-if ('webkitSpeechRecognition' in window) {
-    recognition = new webkitSpeechRecognition();
-    recognition.continuous = true;
-    recognition.interimResults = true;
-
-    // Track state closely to prevent race condition crashes
-    recognition.onstart = () => {
-        isRecognizing = true;
-    };
-
-    recognition.onend = () => {
-        isRecognizing = false;
-        // If the user started holding the button again while the engine was still asynchronously stopping, start it back up now.
-        if (isRecording) {
-            try { recognition.start(); } catch(e) {}
+        console.error("Initialization error:", err);
+        if (statusText) {
+            statusText.innerText = "Vision engine failure. Check camera permissions.";
         }
-    };
-
-    recognition.onresult = (event) => {
-        let interimTranscript = '';
-        let finalTranscriptChunk = '';
-
-        for (let i = event.resultIndex; i < event.results.length; ++i) {
-            if (event.results[i].isFinal) {
-                finalTranscriptChunk += event.results[i][0].transcript;
-                fullTranscript += event.results[i][0].transcript + " ";
-            } else {
-                interimTranscript += event.results[i][0].transcript;
-            }
-        }
-
-        // Display transcript
-        transcriptBox.innerHTML = fullTranscript + '<span class="text-slate-500">' + interimTranscript + '</span>';
-
-        // Check for filler words in the final chunks
-        if (finalTranscriptChunk) {
-            checkFillerWords(finalTranscriptChunk);
-        }
-    };
-
-    recognition.onerror = (event) => {
-        console.error("Speech recognition error", event.error);
-        isRecognizing = false;
-    };
-} else {
-    console.warn("Web Speech API is not supported in this browser. Please use Chrome.");
-}
-
-// --- Core Logic ---
-
-function checkFillerWords(text) {
-    // Regex to find standalone filler words
-    const fillerRegex = /\b(um|uh|like|you know|basically)\b/gi;
-    const matches = text.match(fillerRegex);
-    
-    if (matches) {
-        fillerCount += matches.length;
-        fillerCounter.innerHTML = `Filler Words (Um/Uh): <span class="text-rose-400 font-bold">${fillerCount}</span>`;
-        applyPenalty(5 * matches.length, fillerCounter); // -5% per filler word
     }
 }
 
-function applyPenalty(amount, elementToFlash) {
-    confidenceScore = Math.max(0, confidenceScore - amount);
-    
-    // Update UI
-    confidenceBar.style.width = `${confidenceScore}%`;
-    confidenceText.innerText = `${confidenceScore}%`;
-    
-    // Color changing logic based on score
-    if (confidenceScore < 50) {
-        confidenceBar.className = "bg-gradient-to-r from-rose-500 to-orange-400 h-full rounded-full transition-all duration-300 shadow-[0_0_10px_rgba(225,29,72,0.5)]";
-        confidenceText.className = "text-rose-400 font-bold";
-    } else if (confidenceScore < 80) {
-        confidenceBar.className = "bg-gradient-to-r from-yellow-500 to-orange-400 h-full rounded-full transition-all duration-300 shadow-[0_0_10px_rgba(234,179,8,0.5)]";
-        confidenceText.className = "text-yellow-400 font-bold";
-    }
+function setupWebcam() {
+    const constraints = { 
+        video: { 
+            width: { ideal: 640 }, 
+            height: { ideal: 480 },
+            facingMode: "user"
+        } 
+    };
 
-    // Visual flash feedback
-    elementToFlash.classList.remove('flash-penalty');
-    void elementToFlash.offsetWidth; // trigger reflow
-    elementToFlash.classList.add('flash-penalty');
-    
-    transcriptBox.classList.remove('flash-penalty');
-    void transcriptBox.offsetWidth;
-    transcriptBox.classList.add('flash-penalty');
-}
-
-// --- Custom Audio Context for Hesitation (Hark.js alternative) ---
-async function setupAudioProcessing() {
-    if (!audioContext) {
-        audioContext = new (window.AudioContext || window.webkitAudioContext)();
-    }
-    if (audioContext.state === 'suspended') {
-        await audioContext.resume();
-    }
-
-    try {
-        const stream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
-        mediaStreamSource = audioContext.createMediaStreamSource(stream);
-        
-        // createScriptProcessor is deprecated but works universally without external workers for hackathons
-        scriptProcessor = audioContext.createScriptProcessor(2048, 1, 1);
-        
-        mediaStreamSource.connect(scriptProcessor);
-        scriptProcessor.connect(audioContext.destination);
-
-        scriptProcessor.onaudioprocess = function(event) {
-            if (!isRecording) return;
-            
-            const input = event.inputBuffer.getChannelData(0);
-            let sum = 0;
-            for (let i = 0; i < input.length; i++) {
-                sum += input[i] * input[i];
+    navigator.mediaDevices.getUserMedia(constraints).then((stream) => {
+        video.srcObject = stream;
+        video.onloadedmetadata = () => {
+            video.play();
+            if(statusOverlay) {
+                statusOverlay.style.opacity = "0";
+                setTimeout(() => statusOverlay.classList.add('hidden'), 500);
             }
-            const rms = Math.sqrt(sum / input.length);
-            const volume = rms * 100;
-
-            // Threshold for speaking
-            if (volume > 1.5) {
-                if (!isCurrentlySpeaking) {
-                    isCurrentlySpeaking = true;
-                    clearTimeout(silenceTimer); // User started talking, clear hesitation penalty
-                }
-            } else {
-                if (isCurrentlySpeaking) {
-                    isCurrentlySpeaking = false;
-                    // User stopped talking, start hesitation timer
-                    silenceTimer = setTimeout(() => {
-                        if (isRecording) {
-                            handleHesitation();
-                        }
-                    }, 1500); // 1.5 second pause allowed
-                }
-            }
+            startBtn.disabled = false;
+            processVideo();
         };
-    } catch (err) {
-        console.error("Microphone access denied", err);
-    }
+    }).catch(err => {
+        console.error("Webcam Error:", err);
+        if (statusText) statusText.innerText = "Camera access required.";
+    });
 }
 
-function handleHesitation() {
-    hesitationCount++;
-    pauseCounter.innerHTML = `Hesitations (>1.5s): <span class="text-rose-400 font-bold">${hesitationCount}</span>`;
-    applyPenalty(10, pauseCounter); // -10% per long pause
+async function processVideo() {
+    if (faceMesh && video.readyState >= 2) {
+        await faceMesh.send({image: video});
+    }
+    requestAnimationFrame(processVideo);
+}
+
+function onResults(results) {
+    if (!results.multiFaceLandmarks || results.multiFaceLandmarks.length === 0) return;
     
-    // Automatically restart timer in case they stay silent
-    silenceTimer = setTimeout(() => {
-        if (isRecording) handleHesitation();
-    }, 1500);
-}
-
-// --- Interaction Handlers ---
-
-async function startRecording() {
-    try {
-        if (isRecording) return; // Prevent multiple simultaneous triggers
-        
-        isRecording = true;
-        fullTranscript = "";
-        transcriptBox.classList.remove('hidden');
-        transcriptBox.innerHTML = '<span class="text-slate-500 italic">Listening...</span>';
-        feedbackPanel.classList.add('hidden');
-        
-        // Visuals
-        micBtn.classList.add('recording-active');
-        micBtn.classList.replace('border-slate-700', 'border-cyan-500');
-        micIcon.classList.replace('text-slate-400', 'text-cyan-400');
-        micText.innerText = "Listening...";
-        micText.classList.replace('text-slate-400', 'text-cyan-400');
-
-        // Calculate Timer based on XP (20s to 45s)
-        const xpText = document.getElementById('user-xp').innerText.replace(/,/g, '');
-        const xp = parseInt(xpText) || 0;
-        // Formula: Base 20s + 1s per 100 XP, capped at 45s
-        const pitchDuration = Math.min(45, Math.max(20, 20 + Math.floor(xp / 100)));
-        timeRemaining = pitchDuration;
-        
-        timerDisplay.innerText = `00:${timeRemaining.toString().padStart(2, '0')}`;
-        timerDisplay.classList.remove('opacity-0');
-
-        pitchTimer = setInterval(() => {
-            timeRemaining--;
-            if (timeRemaining <= 0) {
-                stopRecording();
-            } else {
-                timerDisplay.innerText = `00:${timeRemaining.toString().padStart(2, '0')}`;
-            }
-        }, 1000);
-
-        // Start APIs
-        await setupAudioProcessing();
-        
-        if (recognition && !isRecognizing) {
-            try {
-                recognition.start();
-            } catch (e) {
-                console.warn("Speech recognition initialization blocked (Safe Mode).", e);
-            }
-        }
-        
-        // Start initial hesitation timer (if they click hold but don't speak immediately)
-        silenceTimer = setTimeout(() => {
-            if(isRecording && !isCurrentlySpeaking) handleHesitation();
-        }, 2000);
-    } catch (err) {
-        console.error("Failed to start recording properly:", err);
-    }
-}
-
-function stopRecording() {
-    try {
-        if (!isRecording) return;
-        isRecording = false;
-        
-        // Stop Timer
-        clearInterval(pitchTimer);
-        timerDisplay.classList.add('opacity-0');
-
-        // Visuals
-        micBtn.classList.remove('recording-active');
-        micBtn.classList.replace('border-cyan-500', 'border-slate-700');
-        micIcon.classList.replace('text-cyan-400', 'text-slate-400');
-        micText.innerText = "Tap to Start";
-        micText.classList.replace('text-cyan-400', 'text-slate-400');
-
-        // Stop APIs safely
-        if (recognition && isRecognizing) {
-            try {
-                recognition.stop();
-            } catch (e) {
-                console.warn("Error stopping speech recognition gracefully.", e);
-            }
-        }
-        clearTimeout(silenceTimer);
-        if (mediaStreamSource) mediaStreamSource.disconnect();
-        if (scriptProcessor) scriptProcessor.disconnect();
-
-        analyzePitch();
-    } catch(err) {
-        console.error("Failed to stop recording properly:", err);
-    }
-}
-
-// --- Mock Backend Communication ---
-function analyzePitch() {
-    transcriptBox.innerHTML += '<br><br><span class="text-cyan-400 animate-pulse">Sending to Flask API & LLaMA 3...</span>';
+    const landmarks = results.multiFaceLandmarks[0];
     
-    // Simulate network latency & Flask/Vultr Processing
-    setTimeout(async () => {
-        transcriptBox.innerHTML = fullTranscript || "<span class=\"text-slate-500\">No audio detected.</span>";
-        feedbackPanel.classList.remove('hidden');
-        
-        // Generate Dynamic Feedback based on score
-        let feedback = "";
-        if (confidenceScore > 80) {
-            feedback = `Excellent pitch. You kept a steady rhythm and limited filler words. You only hesitated ${hesitationCount} times and used ${fillerCount} filler words. Your confidence reads as authentic and professional.`;
-        } else if (confidenceScore > 50) {
-            feedback = `Not bad, but your nerves are showing. You used ${fillerCount} filler words (\"um/uh\") which undermined your authority. Try to embrace silence instead of filling it. You had ${hesitationCount} long awkward pauses.`;
-        } else {
-            feedback = `Your pitch was derailed by hesitation. With ${hesitationCount} long pauses and ${fillerCount} filler words, you came across as unsure of your own value. Remember to breathe and slow down.`;
+    // Reference: Eye width for scaling
+    const eyeWidth = Math.sqrt(Math.pow(landmarks[33].x - landmarks[133].x, 2)); 
+    
+    // --- SMILE LOGIC ---
+    const leftCorner = landmarks[61];
+    const rightCorner = landmarks[291];
+    const mouthWidth = Math.sqrt(Math.pow(rightCorner.x - leftCorner.x, 2) + Math.pow(rightCorner.y - leftCorner.y, 2));
+    // Lowered multiplier from 2.5 to 1.5 and increased threshold to reduce sensitivity
+    const smileScore = Math.max(0, (mouthWidth / eyeWidth - 1.65) * 1.5);
+
+    // --- BROW LOGIC ---
+    // Distance from eye to brow. 
+    // landmarks[159] (top of left eye), landmarks[52] (left eyebrow)
+    const leftDist = landmarks[159].y - landmarks[52].y;
+    const rightDist = landmarks[386].y - landmarks[282].y;
+    const avgDist = (leftDist + rightDist) / 2;
+    
+    // Neutral range is roughly 0.05 - 0.06. 
+    // We want browScore to rise as avgDist gets SMALLER (furrowing)
+    const neutralThreshold = 0.055; 
+    const browScore = Math.max(0, (neutralThreshold - avgDist) * 25);
+
+    const smilePct = Math.min(100, Math.round(smileScore * 100));
+    const browPct = Math.min(100, Math.round(browScore * 100));
+
+    const valSmile = document.getElementById('val-smile');
+    const barSmile = document.getElementById('bar-smile');
+    const valBrow = document.getElementById('val-brow');
+    const barBrow = document.getElementById('bar-brow');
+
+    if (valSmile) valSmile.innerText = smilePct + "%";
+    if (barSmile) barSmile.style.width = smilePct + "%";
+    if (valBrow) valBrow.innerText = browPct + "%";
+    if (barBrow) barBrow.style.width = browPct + "%";
+
+    if (isChallenging) {
+        checkChallenge(smilePct, browPct);
+    }
+}
+
+function checkChallenge(smile, brow) {
+    const now = performance.now();
+    let isViolated = false;
+    
+    const scenario = scenarios[currentScenarioIdx];
+    if (scenario.target === "Neutral" || scenario.target === "Unfazed") {
+        // Buffer to allow for natural micro-movements
+        if (smile > 30 || brow > 45) isViolated = true;
+    } else if (scenario.target === "Steady Smile") {
+        if (smile < 10 || brow > 50) isViolated = true;
+    }
+
+    if (isViolated) {
+        failChallenge();
+    } else {
+        const elapsed = now - challengeStartTime;
+        const progress = (elapsed / CHALLENGE_DURATION) * 100;
+        if (timerBar) timerBar.style.width = Math.min(100, progress) + "%";
+
+        if (elapsed >= CHALLENGE_DURATION) {
+            winChallenge();
         }
-        
-        feedbackText.innerText = feedback;
-        
-        // award xp (hardcoded +50 for MVP)
-        const xpGain = 50;
-        xpAwardSpan.textContent = `+${xpGain}`;
-        await awardXP(xpGain);
-        
+    }
+}
+
+function startChallenge() {
+    if (isChallenging) return;
+    isChallenging = true;
+    challengeStartTime = performance.now();
+    if (timerBar) timerBar.style.width = "0%";
+    if (feedbackPanel) feedbackPanel.classList.add('hidden');
+    startBtn.innerHTML = `<i class="fa-solid fa-spinner animate-spin"></i> Monitoring...`;
+    startBtn.classList.replace('bg-indigo-600', 'bg-slate-800');
+    videoWrapper.classList.add('ring-4', 'ring-indigo-500/50');
+}
+
+function failChallenge() {
+    isChallenging = false;
+    if (timerBar) timerBar.style.width = "0%";
+    videoWrapper.classList.remove('ring-4', 'ring-indigo-500/50');
+    videoWrapper.classList.add('failure-shake', 'ring-4', 'ring-rose-500/50');
+    
+    startBtn.innerHTML = `<i class="fa-solid fa-rotate-right"></i> Try Again`;
+    startBtn.classList.replace('bg-slate-800', 'bg-indigo-600');
+
+    setTimeout(() => {
+        videoWrapper.classList.remove('failure-shake', 'ring-4', 'ring-rose-500/50');
+    }, 500);
+}
+
+function winChallenge() {
+    isChallenging = false;
+    videoWrapper.classList.remove('ring-4', 'ring-indigo-500/50');
+    videoWrapper.classList.add('ring-4', 'ring-emerald-500/50');
+    
+    startBtn.innerHTML = `<i class="fa-solid fa-check"></i> Passed`;
+    startBtn.classList.replace('bg-slate-800', 'bg-emerald-600');
+
+    if (feedbackPanel) feedbackPanel.classList.remove('hidden');
+    if (feedbackText) feedbackText.innerText = `Excellent. You maintained facial control during ${scenarios[currentScenarioIdx].title}.`;
+    
+    const xpEl = document.getElementById('user-xp');
+    if (xpEl) {
+        let currentXp = parseInt(xpEl.innerText.replace(',', ''));
+        xpEl.innerText = (currentXp + 100).toLocaleString();
+    }
+
+    setTimeout(() => {
+        videoWrapper.classList.remove('ring-4', 'ring-emerald-500/50');
     }, 2000);
 }
 
-// --- Event Listeners ---
-// Toggle recording on click/tap
-micBtn.addEventListener('click', (e) => {
-    e.preventDefault();
-    if (isRecording) {
-        stopRecording(); // Allows user to end early
-    } else {
-        startRecording();
+function updateScenarioUI() {
+    const s = scenarios[currentScenarioIdx];
+    const title = document.getElementById('scenario-title');
+    const desc = document.getElementById('scenario-desc');
+    const target = document.getElementById('target-expression');
+    
+    if (title) title.innerText = s.title;
+    if (desc) desc.innerHTML = s.desc;
+    if (target) target.innerText = s.target;
+    
+    if (startBtn) {
+        startBtn.innerHTML = `<i class="fa-solid fa-eye"></i> Start Focus`;
+        startBtn.className = "bg-indigo-600 hover:bg-indigo-500 disabled:bg-slate-800 disabled:text-slate-600 px-8 py-3 rounded-full font-bold transition-all flex items-center gap-3 shadow-lg shadow-indigo-500/20 active:scale-95";
+        startBtn.disabled = !faceMesh;
     }
-});
+    if (feedbackPanel) feedbackPanel.classList.add('hidden');
+    if (timerBar) timerBar.style.width = "0%";
+}
 
-// populate initial XP
-fetchMe();
+window.addEventListener('load', init);
