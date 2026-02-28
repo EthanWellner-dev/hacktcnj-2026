@@ -1,0 +1,363 @@
+// module6.js handles the pitch exercise, xp display, and backend recording
+
+// --- utility from dashboard.js ---
+async function fetchMe() {
+    const token = localStorage.getItem('ss_token');
+    if (!token) return window.location.href = '/';
+    try {
+        const resp = await fetch('/api/users/me', {
+            headers: { 'Authorization': 'Bearer ' + token }
+        });
+        if (!resp.ok) throw new Error('not authorized');
+        const data = await resp.json();
+        document.getElementById('user-xp').textContent = data.xp || 0;
+        return data;
+    } catch (err) {
+        console.error(err);
+        localStorage.removeItem('ss_token');
+        return window.location.href = '/';
+    }
+}
+
+// function to report xp gain to backend and update header
+async function awardXP(amount) {
+    const token = localStorage.getItem('ss_token');
+    if (!token) return;
+    try {
+        const resp = await fetch('/api/module6/complete', {
+            method: 'POST',
+            headers: {
+                'Authorization': 'Bearer ' + token,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ xp: amount })
+        });
+        if (!resp.ok) throw new Error('xp update failed');
+        const data = await resp.json();
+        document.getElementById('user-xp').textContent = data.xp || 0;
+    } catch (e) {
+        console.error(e);
+    }
+}
+
+// --- the rest of the script copied/adapted from the provided HTML sample ---
+
+// --- State Variables ---
+let isRecording = false;
+let isRecognizing = false; // Add explicit tracker for Speech API state
+let confidenceScore = 100;
+let fillerCount = 0;
+let hesitationCount = 0;
+let fullTranscript = "";
+let pitchTimer = null;
+let timeRemaining = 0;
+        
+// --- DOM Elements ---
+const micBtn = document.getElementById('mic-btn');
+const micIcon = document.getElementById('mic-icon');
+const micText = document.getElementById('mic-text');
+const confidenceBar = document.getElementById('confidence-bar');
+const confidenceText = document.getElementById('confidence-text');
+const fillerCounter = document.getElementById('filler-counter');
+const pauseCounter = document.getElementById('pause-counter');
+const transcriptBox = document.getElementById('transcript-box');
+const feedbackPanel = document.getElementById('feedback-panel');
+const feedbackText = document.getElementById('feedback-text');
+const timerDisplay = document.getElementById('timer-display');
+const xpAwardSpan = document.getElementById('xp-award');
+
+// --- APIs & Audio Context ---
+let recognition = null;
+let audioContext = null;
+let mediaStreamSource = null;
+let scriptProcessor = null;
+let silenceTimer = null;
+let isCurrentlySpeaking = false;
+
+// Initialize Web Speech API
+if ('webkitSpeechRecognition' in window) {
+    recognition = new webkitSpeechRecognition();
+    recognition.continuous = true;
+    recognition.interimResults = true;
+
+    // Track state closely to prevent race condition crashes
+    recognition.onstart = () => {
+        isRecognizing = true;
+    };
+
+    recognition.onend = () => {
+        isRecognizing = false;
+        // If the user started holding the button again while the engine was still asynchronously stopping, start it back up now.
+        if (isRecording) {
+            try { recognition.start(); } catch(e) {}
+        }
+    };
+
+    recognition.onresult = (event) => {
+        let interimTranscript = '';
+        let finalTranscriptChunk = '';
+
+        for (let i = event.resultIndex; i < event.results.length; ++i) {
+            if (event.results[i].isFinal) {
+                finalTranscriptChunk += event.results[i][0].transcript;
+                fullTranscript += event.results[i][0].transcript + " ";
+            } else {
+                interimTranscript += event.results[i][0].transcript;
+            }
+        }
+
+        // Display transcript
+        transcriptBox.innerHTML = fullTranscript + '<span class="text-slate-500">' + interimTranscript + '</span>';
+
+        // Check for filler words in the final chunks
+        if (finalTranscriptChunk) {
+            checkFillerWords(finalTranscriptChunk);
+        }
+    };
+
+    recognition.onerror = (event) => {
+        console.error("Speech recognition error", event.error);
+        isRecognizing = false;
+    };
+} else {
+    console.warn("Web Speech API is not supported in this browser. Please use Chrome.");
+}
+
+// --- Core Logic ---
+
+function checkFillerWords(text) {
+    // Regex to find standalone filler words
+    const fillerRegex = /\b(um|uh|like|you know|basically)\b/gi;
+    const matches = text.match(fillerRegex);
+    
+    if (matches) {
+        fillerCount += matches.length;
+        fillerCounter.innerHTML = `Filler Words (Um/Uh): <span class="text-rose-400 font-bold">${fillerCount}</span>`;
+        applyPenalty(5 * matches.length, fillerCounter); // -5% per filler word
+    }
+}
+
+function applyPenalty(amount, elementToFlash) {
+    confidenceScore = Math.max(0, confidenceScore - amount);
+    
+    // Update UI
+    confidenceBar.style.width = `${confidenceScore}%`;
+    confidenceText.innerText = `${confidenceScore}%`;
+    
+    // Color changing logic based on score
+    if (confidenceScore < 50) {
+        confidenceBar.className = "bg-gradient-to-r from-rose-500 to-orange-400 h-full rounded-full transition-all duration-300 shadow-[0_0_10px_rgba(225,29,72,0.5)]";
+        confidenceText.className = "text-rose-400 font-bold";
+    } else if (confidenceScore < 80) {
+        confidenceBar.className = "bg-gradient-to-r from-yellow-500 to-orange-400 h-full rounded-full transition-all duration-300 shadow-[0_0_10px_rgba(234,179,8,0.5)]";
+        confidenceText.className = "text-yellow-400 font-bold";
+    }
+
+    // Visual flash feedback
+    elementToFlash.classList.remove('flash-penalty');
+    void elementToFlash.offsetWidth; // trigger reflow
+    elementToFlash.classList.add('flash-penalty');
+    
+    transcriptBox.classList.remove('flash-penalty');
+    void transcriptBox.offsetWidth;
+    transcriptBox.classList.add('flash-penalty');
+}
+
+// --- Custom Audio Context for Hesitation (Hark.js alternative) ---
+async function setupAudioProcessing() {
+    if (!audioContext) {
+        audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    }
+    if (audioContext.state === 'suspended') {
+        await audioContext.resume();
+    }
+
+    try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+        mediaStreamSource = audioContext.createMediaStreamSource(stream);
+        
+        // createScriptProcessor is deprecated but works universally without external workers for hackathons
+        scriptProcessor = audioContext.createScriptProcessor(2048, 1, 1);
+        
+        mediaStreamSource.connect(scriptProcessor);
+        scriptProcessor.connect(audioContext.destination);
+
+        scriptProcessor.onaudioprocess = function(event) {
+            if (!isRecording) return;
+            
+            const input = event.inputBuffer.getChannelData(0);
+            let sum = 0;
+            for (let i = 0; i < input.length; i++) {
+                sum += input[i] * input[i];
+            }
+            const rms = Math.sqrt(sum / input.length);
+            const volume = rms * 100;
+
+            // Threshold for speaking
+            if (volume > 1.5) {
+                if (!isCurrentlySpeaking) {
+                    isCurrentlySpeaking = true;
+                    clearTimeout(silenceTimer); // User started talking, clear hesitation penalty
+                }
+            } else {
+                if (isCurrentlySpeaking) {
+                    isCurrentlySpeaking = false;
+                    // User stopped talking, start hesitation timer
+                    silenceTimer = setTimeout(() => {
+                        if (isRecording) {
+                            handleHesitation();
+                        }
+                    }, 1500); // 1.5 second pause allowed
+                }
+            }
+        };
+    } catch (err) {
+        console.error("Microphone access denied", err);
+    }
+}
+
+function handleHesitation() {
+    hesitationCount++;
+    pauseCounter.innerHTML = `Hesitations (>1.5s): <span class="text-rose-400 font-bold">${hesitationCount}</span>`;
+    applyPenalty(10, pauseCounter); // -10% per long pause
+    
+    // Automatically restart timer in case they stay silent
+    silenceTimer = setTimeout(() => {
+        if (isRecording) handleHesitation();
+    }, 1500);
+}
+
+// --- Interaction Handlers ---
+
+async function startRecording() {
+    try {
+        if (isRecording) return; // Prevent multiple simultaneous triggers
+        
+        isRecording = true;
+        fullTranscript = "";
+        transcriptBox.classList.remove('hidden');
+        transcriptBox.innerHTML = '<span class="text-slate-500 italic">Listening...</span>';
+        feedbackPanel.classList.add('hidden');
+        
+        // Visuals
+        micBtn.classList.add('recording-active');
+        micBtn.classList.replace('border-slate-700', 'border-cyan-500');
+        micIcon.classList.replace('text-slate-400', 'text-cyan-400');
+        micText.innerText = "Listening...";
+        micText.classList.replace('text-slate-400', 'text-cyan-400');
+
+        // Calculate Timer based on XP (20s to 45s)
+        const xpText = document.getElementById('user-xp').innerText.replace(/,/g, '');
+        const xp = parseInt(xpText) || 0;
+        // Formula: Base 20s + 1s per 100 XP, capped at 45s
+        const pitchDuration = Math.min(45, Math.max(20, 20 + Math.floor(xp / 100)));
+        timeRemaining = pitchDuration;
+        
+        timerDisplay.innerText = `00:${timeRemaining.toString().padStart(2, '0')}`;
+        timerDisplay.classList.remove('opacity-0');
+
+        pitchTimer = setInterval(() => {
+            timeRemaining--;
+            if (timeRemaining <= 0) {
+                stopRecording();
+            } else {
+                timerDisplay.innerText = `00:${timeRemaining.toString().padStart(2, '0')}`;
+            }
+        }, 1000);
+
+        // Start APIs
+        await setupAudioProcessing();
+        
+        if (recognition && !isRecognizing) {
+            try {
+                recognition.start();
+            } catch (e) {
+                console.warn("Speech recognition initialization blocked (Safe Mode).", e);
+            }
+        }
+        
+        // Start initial hesitation timer (if they click hold but don't speak immediately)
+        silenceTimer = setTimeout(() => {
+            if(isRecording && !isCurrentlySpeaking) handleHesitation();
+        }, 2000);
+    } catch (err) {
+        console.error("Failed to start recording properly:", err);
+    }
+}
+
+function stopRecording() {
+    try {
+        if (!isRecording) return;
+        isRecording = false;
+        
+        // Stop Timer
+        clearInterval(pitchTimer);
+        timerDisplay.classList.add('opacity-0');
+
+        // Visuals
+        micBtn.classList.remove('recording-active');
+        micBtn.classList.replace('border-cyan-500', 'border-slate-700');
+        micIcon.classList.replace('text-cyan-400', 'text-slate-400');
+        micText.innerText = "Tap to Start";
+        micText.classList.replace('text-cyan-400', 'text-slate-400');
+
+        // Stop APIs safely
+        if (recognition && isRecognizing) {
+            try {
+                recognition.stop();
+            } catch (e) {
+                console.warn("Error stopping speech recognition gracefully.", e);
+            }
+        }
+        clearTimeout(silenceTimer);
+        if (mediaStreamSource) mediaStreamSource.disconnect();
+        if (scriptProcessor) scriptProcessor.disconnect();
+
+        analyzePitch();
+    } catch(err) {
+        console.error("Failed to stop recording properly:", err);
+    }
+}
+
+// --- Mock Backend Communication ---
+function analyzePitch() {
+    transcriptBox.innerHTML += '<br><br><span class="text-cyan-400 animate-pulse">Sending to Flask API & LLaMA 3...</span>';
+    
+    // Simulate network latency & Flask/Vultr Processing
+    setTimeout(async () => {
+        transcriptBox.innerHTML = fullTranscript || "<span class=\"text-slate-500\">No audio detected.</span>";
+        feedbackPanel.classList.remove('hidden');
+        
+        // Generate Dynamic Feedback based on score
+        let feedback = "";
+        if (confidenceScore > 80) {
+            feedback = `Excellent pitch. You kept a steady rhythm and limited filler words. You only hesitated ${hesitationCount} times and used ${fillerCount} filler words. Your confidence reads as authentic and professional.`;
+        } else if (confidenceScore > 50) {
+            feedback = `Not bad, but your nerves are showing. You used ${fillerCount} filler words (\"um/uh\") which undermined your authority. Try to embrace silence instead of filling it. You had ${hesitationCount} long awkward pauses.`;
+        } else {
+            feedback = `Your pitch was derailed by hesitation. With ${hesitationCount} long pauses and ${fillerCount} filler words, you came across as unsure of your own value. Remember to breathe and slow down.`;
+        }
+        
+        feedbackText.innerText = feedback;
+        
+        // award xp (hardcoded +50 for MVP)
+        const xpGain = 50;
+        xpAwardSpan.textContent = `+${xpGain}`;
+        await awardXP(xpGain);
+        
+    }, 2000);
+}
+
+// --- Event Listeners ---
+// Toggle recording on click/tap
+micBtn.addEventListener('click', (e) => {
+    e.preventDefault();
+    if (isRecording) {
+        stopRecording(); // Allows user to end early
+    } else {
+        startRecording();
+    }
+});
+
+// populate initial XP
+fetchMe();
