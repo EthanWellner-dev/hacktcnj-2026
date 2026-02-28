@@ -4,6 +4,7 @@ from pymongo import MongoClient
 from werkzeug.security import generate_password_hash, check_password_hash
 import os
 import json
+import re
 
 # PyJWT is required; avoid installing the similarly named `jwt` package
 try:
@@ -23,6 +24,15 @@ from datetime import datetime, timedelta, timezone
 
 # install dependencies: pip install flask flask-cors pymongo PyJWT
 
+# Conversation starters for variety
+CONVERSATION_STARTERS = [
+    "That movie was actually wild, I didn't expect that ending.",
+    "Have you seen any good movies lately?",
+    "I just finished this show and it blew my mind.",
+    "What's your take on good storytelling in films?",
+    "I'm always looking for recommendations on what to watch next."
+]
+
 # serve templates from `template/` and static from `template/static`
 app = Flask(__name__, static_folder='../template/static', template_folder='../template')
 CORS(app)  # allow all origins by default for local development
@@ -37,6 +47,39 @@ training_col = db.training_results  # store detailed training submissions
 # JWT config
 JWT_SECRET = os.environ.get('JWT_SECRET', 'dev-secret')
 JWT_ALGO = 'HS256'
+
+# Helper function to extract JSON from response (handles mixed prose + JSON)
+def extract_json_from_response(response_text):
+    """Extract JSON object from response that may contain prose."""
+    # Try direct parse first
+    try:
+        return json.loads(response_text.strip())
+    except json.JSONDecodeError:
+        pass
+    
+    # Remove markdown code blocks
+    if response_text.startswith('```json'):
+        response_text = response_text[7:]
+    if response_text.startswith('```'):
+        response_text = response_text[3:]
+    if response_text.endswith('```'):
+        response_text = response_text[:-3]
+    
+    # Try again after stripping markdown
+    try:
+        return json.loads(response_text.strip())
+    except json.JSONDecodeError:
+        pass
+    
+    # Use regex to find JSON object in the text
+    json_match = re.search(r'\{[^{}]*(?:\{[^{}]*\}[^{}]*)*\}', response_text, re.DOTALL)
+    if json_match:
+        try:
+            return json.loads(json_match.group(0))
+        except json.JSONDecodeError:
+            pass
+    
+    raise json.JSONDecodeError("Could not extract valid JSON from response", response_text, 0)
 
 # Load Gemini API key from secrets.env
 def load_api_key():
@@ -263,79 +306,117 @@ def chat_evaluate():
     module = payload.get('module')
     user_msg = payload.get('user_message', '')
     context = payload.get('context', '')
+    scenario = payload.get('scenario', '')
+    turn_count = payload.get('turn_count', 1)
 
     if not module or not user_msg:
         return jsonify({'status': 'error', 'message': 'module and user_message required'}), 400
 
     # Build module-specific prompt for Gemini
+    # For hint module, check if we're in early turns (1-2) that need responses, not evaluation
+    is_hint_response_turn = (module == 'hint' and turn_count < 3)
+    
     prompts = {
-        'icebreaker': f"""You are a helpful evaluator. A user sent a cold networking text to Alex after meeting at a tech conference. The user message is: \\"{user_msg}\\".
+        'icebreaker': f"""You are a kind, encouraging evaluator helping neurodivergent kids practice social skills.
 
-In one JSON output (no extra prose) do the following:
-1. Analyze whether the message establishes rapport and shared context, sounds warm, and is not too brief.
-2. Propose what Alex might reply (ai_response) to keep the conversation going.
-3. Provide a numeric score 0-100 reflecting quality.
-4. Award XP: +50 for an excellent pitch, scale down for weaker messages; XP may be negative for aggressive/offensive replies.
-5. Give concise feedback string.
+SCENARIO: {scenario}
+User message: \\"{user_msg}\\"
 
-Return exactly:
-{{"passed": true/false, "score": number, "xp": number, "feedback": "string", "ai_response": "text"}}
+RESPOND WITH ONLY VALID JSON. NO OTHER TEXT. STRICTLY JSON ONLY.
+
+Score generously: minimum 50% unless mean/rude. 50-69% decent, 70-84% good, 85-100% excellent.
+XP: +25-40 (decent), +50-75 (good), +100+ (excellent).
+
+{{
+  "passed": boolean,
+  "score": number,
+  "xp": number,
+  "feedback": "positive feedback focusing on what they did well",
+  "ai_response": "suggested reply from the person"
+}}
 """,
         
-        'hint': f"""You are a helpful evaluator monitoring a conversation. Jordan just gave a departure hint: 'Yeah for sure... Anyway, wow look at the time, I have an early morning tomorrow.'
-User replied: \\"{user_msg}\\".
+        'hint_response': f"""You are a warm AI companion having a casual conversation with a user about movies.
 
-In one JSON response describe:
-1. Whether the user recognized the hint and offered a polite exit rather than extending the chat.
-2. Give a score 0-100 reflecting how gracefully they handled it.
-3. Award XP (positive if they exit well, negative for ignoring/aggression).
-4. Provide feedback string. No ai_response needed.
-
-Return exactly:
-{{"passed": true/false, "score": number, "xp": number, "feedback": "string"}}
-""",
-        
-        'pingpong': f"""You are a helpful evaluator tracking momentum. The opening prompt was: 'So what do you usually do for fun on the weekends?'
-
-Conversation context:
+Previous exchange:
 {context}
-User's latest reply: \\"{user_msg}\\".
 
-In one JSON output:
-1. Judge whether the reply keeps momentum by asking open-ended questions and giving substantial content.
-2. Provide what the AI partner might say next to continue the chat (ai_response).
-3. Assign a score (0-100).
-4. Award XP (positive for flow, negative for abrupt/closed answers).
-5. Feedback string.
+User just said: \\"{user_msg}\\"
 
-Return exactly:
-{{"passed": true/false, "score": number, "xp": number, "feedback": "string", "ai_response": "text"}}
+Respond naturally and warmly. Then provide light, positive commentary about how they're engaging. Keep it encouraging and positive.
+
+RESPOND WITH ONLY VALID JSON. NO OTHER TEXT. STRICTLY JSON ONLY.
+
+{{
+  "response": "your conversational response to keep chat going",
+  "pontage": "1-2 sentences of light positive commentary on their engagement"
+}}
+""",
+        
+        'hint': f"""You are a kind evaluator helping neurodivergent kids recognize social cues.
+
+Turn {turn_count} of conversation about movies with Jordan.
+Jordan gave departure hint: "Yeah for sure... Anyway, wow look at the time, I have an early morning tomorrow."
+User replied: \\"{user_msg}\\"
+
+RESPOND WITH ONLY VALID JSON. NO OTHER TEXT. STRICTLY JSON ONLY.
+
+Score: 50-64% recognizes hint, 65-79% good exit, 80-100% excellent graceful exit.
+XP: +15-25 (recognizes), +30-40 (good), +50+ (excellent), 0-10 (polite miss).
+
+{{
+  "passed": boolean,
+  "score": number,
+  "xp": number,
+  "feedback": "encouraging feedback on their social awareness"
+}}
+""",
+        
+        'pingpong': f"""You are a helpful evaluator tracking momentum in a weekend activity conversation.
+
+Opening: "So what do you usually do for fun on the weekends?"
+Context:
+{context}
+Latest reply: \\"{user_msg}\\"
+
+RESPOND WITH ONLY VALID JSON. NO OTHER TEXT. STRICTLY JSON ONLY.
+
+{{
+  "passed": boolean,
+  "score": number,
+  "xp": number,
+  "feedback": "constructive feedback",
+  "ai_response": "suggested continuation from partner"
+}}
 """
     }
 
-    if module not in prompts:
+    if module not in prompts and not is_hint_response_turn:
         return jsonify({'status': 'error', 'message': 'invalid module'}), 400
+    
+    prompt_key = 'hint_response' if is_hint_response_turn else module
 
     try:
-        # use flash-lite model per API error
+        # use flash-lite model with token limit
         response = GEMINI_CLIENT.models.generate_content(
-            model='gemini-2.5-flash-lite',
-            contents=prompts[module]
+            model='gemini-2.0-flash',
+            contents=prompts[prompt_key]
         )
         
-        # Parse response
+        # Parse response - extract JSON even if there's prose mixed in
         response_text = response.text.strip()
-        # Remove markdown code block if present
-        if response_text.startswith('```json'):
-            response_text = response_text[7:]
-        if response_text.startswith('```'):
-            response_text = response_text[3:]
-        if response_text.endswith('```'):
-            response_text = response_text[:-3]
+        result = extract_json_from_response(response_text)
         
-        result = json.loads(response_text.strip())
+        # Handle hint response turns differently (just return response + pontage, no XP yet)
+        if is_hint_response_turn:
+            return jsonify({
+                'status': 'success',
+                'response': result.get('response', ''),
+                'pontage': result.get('pontage', ''),
+                'xp_current': user.get('xp', 0)
+            })
         
-        # Award XP if present
+        # For evaluation turns, award XP if present
         xp_gain = result.get('xp', 0)
         if xp_gain > 0:
             users_col.update_one({'username': user['username']}, {'$inc': {'xp': xp_gain}})
@@ -360,7 +441,7 @@ Return exactly:
         return jsonify({'status': 'success', **result})
     except json.JSONDecodeError as je:
         print(f"JSON parse error: {je}, response was: {response_text}")
-        return jsonify({'status': 'error', 'message': 'invalid gemini response'}), 500
+        return jsonify({'status': 'error', 'message': 'invalid gemini response format'}), 500
     except Exception as e:
         print(f"Error calling Gemini: {e}")
         return jsonify({'status': 'error', 'message': str(e)}), 500

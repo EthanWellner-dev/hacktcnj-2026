@@ -78,6 +78,8 @@
     let conversationHistory = ['That movie was actually wild, I didn\'t expect that ending.'];
     let isProcessing = false;
     let exerciseComplete = false;
+    let turnCount = 0;
+    const hintIntroducedAt = 3; // Evaluate on turn 3
 
     async function init() {
         try {
@@ -89,26 +91,32 @@
 
     function renderMessages() {
         const container = document.getElementById('messages-container');
-        // Only render after the initial prompt
-        container.innerHTML = '<div class="p-4 rounded-lg bg-slate-800/60 border border-white/10">That movie was actually wild, I didn\'t expect that ending.</div>';
+        container.innerHTML = '';
         
-        // Add conversation
-        for (let i = 1; i < conversationHistory.length; i++) {
-            const msg = conversationHistory[i];
+        conversationHistory.forEach((msg, index) => {
             const bubble = document.createElement('div');
             bubble.className = 'p-4 rounded-lg';
             
-            if (i % 2 === 1) {
-                bubble.className += ' bg-gradient-to-br from-cyan-600 to-blue-600 text-white ml-8';
-            } else {
+            // AI messages are at even indices (0, 2, 4...), user at odd (1, 3, 5...)
+            if (index % 2 === 0) {
                 bubble.className += ' bg-slate-800/60 border border-white/10';
+            } else {
+                bubble.className += ' bg-gradient-to-br from-cyan-600 to-blue-600 text-white ml-8';
             }
             
             bubble.textContent = msg;
             container.appendChild(bubble);
-        }
+        });
         
         container.scrollTop = container.scrollHeight;
+    }
+
+    function showPontage(text) {
+        const feedback = document.getElementById('feedback-container');
+        feedback.innerHTML = `<p class="text-sm text-emerald-400 italic">${text}</p>`;
+        setTimeout(() => {
+            feedback.innerHTML = '<p class="text-sm text-slate-500 text-center">Keep the conversation going...</p>';
+        }, 3000);
     }
 
     async function sendMessage(e) {
@@ -119,13 +127,16 @@
         const userMsg = input.value.trim();
         if (!userMsg) return;
         
-        // Add to history
+        turnCount++;
+        
+        // Add user message to history
         conversationHistory.push(userMsg);
         input.value = '';
         renderMessages();
         
         isProcessing = true;
-        document.getElementById('feedback-container').innerHTML = '<p class="text-sm text-yellow-400 animate-pulse">Evaluating...</p>';
+        
+        document.getElementById('feedback-container').innerHTML = '<p class="text-sm text-yellow-400 animate-pulse">Jordan is typing...</p>';
         
         try {
             const token = localStorage.getItem('ss_token');
@@ -138,37 +149,46 @@
                 body: JSON.stringify({
                     module: 'hint',
                     user_message: userMsg,
-                    context: conversationHistory.join('\n')
+                    context: conversationHistory.slice(0, -1).join('\n'),
+                    turn_count: turnCount
                 })
             });
             
             const data = await response.json();
             
             if (data.status === 'success') {
-                // Show feedback
-                const feedback = document.getElementById('feedback-container');
-                feedback.innerHTML = `
-                    <div class="space-y-3">
-                        <div class="${data.passed ? 'text-emerald-400' : 'text-rose-400'} font-bold text-lg">
-                            ${data.passed ? '✓ Perfectly Read' : '✗ Missed Cue'}
+                // For early turns, add AI response and show pontage
+                if (turnCount < hintIntroducedAt) {
+                    conversationHistory.push(data.response);
+                    renderMessages();
+                    showPontage(data.pontage);
+                } else {
+                    // This is the evaluation turn
+                    // Show feedback
+                    const feedback = document.getElementById('feedback-container');
+                    feedback.innerHTML = `
+                        <div class="space-y-3">
+                            <div class="${data.passed ? 'text-emerald-400' : 'text-rose-400'} font-bold text-lg">
+                                ${data.passed ? '✓ Perfectly Read' : '✗ Missed Cue'}
+                            </div>
+                            <div>
+                                <div class="text-xs text-slate-500 mb-1">Score</div>
+                                <div class="text-2xl font-bold ${data.passed ? 'text-emerald-400' : 'text-rose-400'}">${data.score}%</div>
+                            </div>
+                            <div>
+                                <div class="text-xs text-slate-500 mb-1">XP</div>
+                                <div class="text-xl font-bold text-cyan-400">+${data.xp}</div>
+                            </div>
+                            <div class="bg-slate-900/50 p-3 rounded text-xs text-slate-300 border border-white/5">
+                                ${data.feedback}
+                            </div>
                         </div>
-                        <div>
-                            <div class="text-xs text-slate-500 mb-1">Score</div>
-                            <div class="text-2xl font-bold ${data.passed ? 'text-emerald-400' : 'text-rose-400'}">${data.score}%</div>
-                        </div>
-                        <div>
-                            <div class="text-xs text-slate-500 mb-1">XP</div>
-                            <div class="text-xl font-bold text-cyan-400">+${data.xp}</div>
-                        </div>
-                        <div class="bg-slate-900/50 p-3 rounded text-xs text-slate-300 border border-white/5">
-                            ${data.feedback}
-                        </div>
-                    </div>
-                `;
-                
-                document.getElementById('user-xp').textContent = data.xp_current;
-                exerciseComplete = true;
-                input.disabled = true;
+                    `;
+                    
+                    document.getElementById('user-xp').textContent = data.xp_current;
+                    exerciseComplete = true;
+                    input.disabled = true;
+                }
             } else {
                 document.getElementById('feedback-container').innerHTML = `<p class="text-rose-400 text-sm">${data.message}</p>`;
             }

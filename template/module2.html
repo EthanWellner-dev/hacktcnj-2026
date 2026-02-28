@@ -27,7 +27,7 @@
             MODULE 2: THE ICEBREAKER
         </div>
         <h2 class="text-2xl font-bold mb-2 text-white">Establish Rapport</h2>
-        <p class="text-slate-400 text-sm">First impressions matter. You are at a networking event. Initiate a cold text to the person you just got a business card from and establish a common interest.</p>
+        <p id="scenario-text" class="text-slate-400 text-sm"></p>
     </div>
 
     <!-- Chat Container -->
@@ -77,9 +77,37 @@
 <script>
     let conversationHistory = [];
     let isProcessing = false;
+    let currentScenario = '';
+
+    // List of varied icebreaker scenarios
+    const scenarios = [
+        "You just met Alex at a tech conference. Alex works at a cool startup and mentioned they're building AI tools. Send them a text to establish a connection and mention something you both discussed.",
+        "You connected with Jordan at a networking event. Jordan is a UX designer who talked about making apps more accessible. Reach out and find a common interest.",
+        "Casey gave you their card at a marketing conference. They work for a gaming company. Send a warm follow-up text and mention something you have in common.",
+        "You met Morgan at a startup pitch event. They were presenting a social media tool. Follow up with them about their project.",
+        "Sam works in web development and you met them at a tech meetup. They seemed interested in open-source projects. Send them a friendly message.",
+        "You networked with Riley at a design workshop. They specialize in creating games for younger audiences. Reach out and find common ground.",
+        "Taylor is a software engineer you met at a hackathon. You both worked on similar problems. Send a message to stay connected.",
+        "You met Blake at a business conference. Blake runs a small tech company and mentioned they love mentoring. Initiate contact.",
+        "Jamie is a product manager you met at a virtual networking event. They talked about making products more user-friendly. Send them a thoughtful message.",
+        "You connected with Alex at a panel discussion about careers in tech. Alex gave interesting insights. Follow up on what they shared.",
+        "Sky is a developer you met at a coding bootcamp meetup. You both struggled with the same programming concept. Reach out with camaraderie.",
+        "You networked with Sage at a digital marketing event. They talked about content creation strategies. Send a warm follow-up.",
+        "Kai gave you their card at a robotics competition. They work on automation projects. Send an enthusiastic message about their work.",
+        "You met Drew at a web development conference. Drew specializes in accessibility features. Connect with them about making tech inclusive.",
+        "River is a graphic designer you met at a creative professionals event. You both love visual storytelling. Send them a message.",
+        "You connected with Quinn at a social entrepreneurship event. Quinn is passionate about using tech for good. Reach out enthusiastically.",
+        "Ash works in cybersecurity and you met them at a tech talk. You're both interested in protecting online privacy. Send a friendly message.",
+        "You networked with Casey at a coding workshop. Casey is learning the same programming language as you. Offer to stay in touch for mutual learning.",
+        "Bailey is a data analyst you met at a conference. They gave a talk about making data accessible. Send a thoughtful follow-up.",
+        "You met Rowan at a startup networking event. Rowan is building an app to help students with organization. Connect with them about their vision."
+    ];
 
     async function init() {
         try {
+            // Select random scenario
+            currentScenario = scenarios[Math.floor(Math.random() * scenarios.length)];
+            document.getElementById('scenario-text').textContent = currentScenario;
             await backend.fetchMe();
         } catch (err) {
             console.error('Init error:', err);
@@ -134,7 +162,8 @@
                 body: JSON.stringify({
                     module: 'icebreaker',
                     user_message: userMsg,
-                    context: conversationHistory.map(m => `${m.sender}: ${m.text}`).join('\n')
+                    context: conversationHistory.map(m => `${m.sender}: ${m.text}`).join('\n'),
+                    scenario: currentScenario
                 })
             });
             
@@ -152,7 +181,7 @@
                 feedback.innerHTML = `
                     <div class="space-y-3">
                         <div class="${data.passed ? 'text-emerald-400' : 'text-rose-400'} font-bold text-lg">
-                            ${data.passed ? '✓ Passed' : '✗ Failed'}
+                            ${data.passed ? '✓ Passed' : '✗ Needs Work'}
                         </div>
                         <div>
                             <div class="text-xs text-slate-500 mb-1">Score</div>
