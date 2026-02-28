@@ -47,15 +47,6 @@ function setupButtons() {
     document.getElementById('btn-modules').addEventListener('click', () => {
         window.location.href = '/modules';
     });
-    document.getElementById('btn-digital').addEventListener('click', () => {
-        document.getElementById('gym-area').innerHTML = `<h4 class="text-slate-100 font-medium">Gym 1: Digital Comm Suite</h4><p class="text-slate-400">Open chat-module.html (not yet implemented)</p>`;
-    });
-    document.getElementById('btn-vocal').addEventListener('click', () => {
-        document.getElementById('gym-area').innerHTML = `<h4 class="text-slate-100 font-medium">Gym 2: Vocal Sandbox</h4><p class="text-slate-400">Hold-to-Speak UI placeholder</p>`;
-    });
-    document.getElementById('btn-facial').addEventListener('click', () => {
-        document.getElementById('gym-area').innerHTML = `<h4 class="text-slate-100 font-medium">Gym 3: Facial Gym</h4><p class="text-slate-400">Expression training placeholder</p>`;
-    });
     document.getElementById('logout').addEventListener('click', () => {
         localStorage.removeItem('ss_token');
         window.location.href = '/';
