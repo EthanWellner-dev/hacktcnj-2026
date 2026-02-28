@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Social Sandbox — Login</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <style>body{background:#020617;color:#e6eef2;font-family:Inter,system-ui,Segoe UI,Roboto}</style>
+</head>
+<body class="min-h-screen flex items-center justify-center">
+  <div class="w-full max-w-md p-6 bg-slate-900/60 backdrop-blur-md rounded-xl border border-white/5">
+    <h1 class="text-2xl font-semibold text-slate-100 mb-4">Social Sandbox</h1>
+    <p class="text-sm text-slate-400 mb-4">Secure training for your social muscles — Login</p>
+
+    <form id="login-form" class="space-y-3">
+      <input id="username" placeholder="Username" class="w-full p-3 bg-transparent border border-white/10 rounded-lg text-slate-100" required>
+      <input id="password" type="password" placeholder="Password" class="w-full p-3 bg-transparent border border-white/10 rounded-lg text-slate-100" required>
+      <div class="flex items-center justify-between">
+        <button type="submit" class="bg-cyan-500 text-white px-4 py-2 rounded-xl">Log in</button>
+        <a href="/register" class="text-sm text-slate-400 underline">Create account</a>
+      </div>
+    </form>
+
+    <div id="status" class="mt-3 text-sm"></div>
+  </div>
+
+  <script src="/static/js/auth.js"></script>
+</body>
+</html>
