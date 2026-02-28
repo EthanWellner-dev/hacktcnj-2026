@@ -1,0 +1,234 @@
+{% extends 'base.html' %}
+{% block title %}Sarcasm Sweeper | Social Sandbox{% endblock %}
+{% block content %}
+
+<nav class="w-full border-b border-white/10 bg-slate-900/50 backdrop-blur-md px-6 py-4 flex justify-between items-center z-10">
+    <div class="flex items-center gap-3">
+        <div class="w-8 h-8 rounded bg-gradient-to-br from-cyan-400 to-blue-600 flex items-center justify-center shadow-[0_0_10px_rgba(6,182,212,0.5)]">
+            <i class="fa-solid fa-cube text-white text-sm"></i>
+        </div>
+        <h1 class="font-bold tracking-wider text-sm uppercase text-slate-300">Social Sandbox <span class="text-cyan-400 font-mono text-xs ml-2">v0.1.0-MVP</span></h1>
+    </div>
+    <div class="flex items-center gap-6">
+        <div class="font-mono text-sm">
+            <span class="text-slate-400">XP:</span> <span id="user-xp" class="text-emerald-400 font-bold">0</span>
+        </div>
+        <button onclick="window.location.href='/modules'" class="text-slate-400 hover:text-white text-sm transition-colors border border-white/10 rounded px-3 py-1 bg-slate-800/50">
+            <i class="fa-solid fa-arrow-left mr-2"></i>Lounge
+        </button>
+    </div>
+</nav>
+
+<main class="flex-1 w-full max-w-6xl mx-auto p-6 flex flex-col gap-6 relative z-10">
+    
+    <!-- Progress Header -->
+    <div class="glass-panel rounded-xl p-6">
+        <div class="inline-block bg-cyan-900/50 text-cyan-300 px-3 py-1 rounded-full text-xs font-mono border border-cyan-500/30 mb-3">
+            MODULE 1: SARCASM SWEEPER
+        </div>
+        <h2 class="text-2xl font-bold mb-2 text-white">Identify Passive-Aggression</h2>
+        <p class="text-slate-400 text-sm mb-4">Scan the group chat. Flag the message that contains hidden passive-aggression, sarcasm, or underlying hostility.</p>
+        <div class="flex items-center gap-4">
+            <div class="flex-1 bg-slate-800 rounded-full h-2 overflow-hidden">
+                <div id="progress-bar" class="bg-gradient-to-r from-cyan-500 to-blue-500 h-full transition-all duration-300" style="width: 0%"></div>
+            </div>
+            <span id="progress-text" class="text-sm font-mono text-slate-300"><span id="current-exercise">0</span>/10</span>
+        </div>
+    </div>
+
+    <!-- Chat Container -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        
+        <!-- LEFT: Chat Messages -->
+        <div class="lg:col-span-2 glass-panel rounded-xl p-6 flex flex-col">
+            <h3 class="text-sm font-mono text-slate-400 mb-4 uppercase tracking-wider">Project Team Alpha</h3>
+            <div id="messages-container" class="space-y-3 flex-1 overflow-y-auto mb-4">
+                <!-- Messages will be rendered here -->
+            </div>
+        </div>
+
+        <!-- RIGHT: Feedback Panel -->
+        <div class="glass-panel rounded-xl p-6 flex flex-col">
+            <h3 class="text-sm font-mono text-slate-400 mb-4 uppercase tracking-wider"><i class="fa-solid fa-robot text-cyan-400 mr-2"></i>Analysis</h3>
+            <div id="feedback-container" class="flex-1 flex flex-col justify-center items-center text-slate-500 text-center">
+                <i class="fa-solid fa-radar text-4xl mb-3 opacity-50"></i>
+                <p class="text-sm">Select a message to analyze...</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Complete Screen -->
+    <div id="complete-screen" class="hidden glass-panel rounded-xl p-8 text-center">
+        <i class="fa-solid fa-trophy text-6xl text-yellow-400 mb-4"></i>
+        <h2 class="text-3xl font-bold text-white mb-2">Module Complete!</h2>
+        <p class="text-slate-400 mb-6">You've completed all 10 exercises in Sarcasm Sweeper.</p>
+        <div id="total-xp" class="text-2xl font-bold text-cyan-400 mb-6"></div>
+        <button onclick="window.location.href='/modules'" class="bg-gradient-to-r from-cyan-500 to-blue-500 text-white px-6 py-3 rounded-lg font-bold hover:brightness-110 transition-all">
+            <i class="fa-solid fa-arrow-left mr-2"></i>Back to Lounge
+        </button>
+    </div>
+
+</main>
+
+<style>
+    .glass-panel {
+        background: rgba(15, 23, 42, 0.7);
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+    
+    #messages-container::-webkit-scrollbar { width: 6px; }
+    #messages-container::-webkit-scrollbar-track { background: transparent; }
+    #messages-container::-webkit-scrollbar-thumb { background: #334155; border-radius: 10px; }
+    #messages-container::-webkit-scrollbar-thumb:hover { background: #475569; }
+    
+    .message-bubble {
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+    
+    .message-bubble:hover {
+        transform: translateX(4px);
+    }
+    
+    .message-selected {
+        ring: 2px solid rgb(6, 182, 212);
+    }
+</style>
+
+<script>
+    let prompts = [];
+    let currentExercise = 0;
+    let currentPrompt = null;
+    let selectedMessageId = null;
+    let totalXpEarned = 0;
+
+    // Fetch user data and prompts
+    async function init() {
+        try {
+            // Get user XP
+            await backend.fetchMe();
+            
+            // Load prompts
+            const response = await fetch('/static/data/sarcasm-prompts.json');
+            prompts = await response.json();
+            
+            // Load first exercise
+            if (prompts.length > 0) {
+                loadExercise();
+            }
+        } catch (err) {
+            console.error('Init error:', err);
+        }
+    }
+
+    function loadExercise() {
+        if (currentExercise >= 10 || currentExercise >= prompts.length) {
+            showComplete();
+            return;
+        }
+
+        currentPrompt = prompts[currentExercise];
+        selectedMessageId = null;
+        
+        // Render messages
+        const container = document.getElementById('messages-container');
+        container.innerHTML = '';
+        
+        currentPrompt.messages.forEach((msg, idx) => {
+            const bubble = document.createElement('div');
+            bubble.className = 'message-bubble p-4 rounded-lg transition-all';
+            bubble.innerHTML = `<span class="text-slate-400 text-xs font-mono mr-2">${msg.sender.toUpperCase()}</span><span class="text-slate-200">${msg.text}</span>`;
+            
+            if (msg.sender === 'ai') {
+                bubble.classList.add('bg-slate-800/60', 'border', 'border-white/10', 'cursor-pointer', 'hover:border-cyan-500/50');
+                bubble.dataset.id = idx;
+                bubble.onclick = () => selectMessage(idx);
+            } else {
+                bubble.classList.add('bg-slate-700/40', 'ml-8');
+            }
+            
+            container.appendChild(bubble);
+        });
+        
+        // Update progress
+        document.getElementById('current-exercise').textContent = currentExercise + 1;
+        const progress = ((currentExercise + 1) / 10) * 100;
+        document.getElementById('progress-bar').style.width = `${progress}%`;
+        
+        // Clear feedback
+        document.getElementById('feedback-container').innerHTML = `
+            <i class="fa-solid fa-radar text-4xl mb-3 opacity-50"></i>
+            <p class="text-sm">Select a message to analyze...</p>
+        `;
+    }
+
+    function selectMessage(idx) {
+        // Deselect previous
+        document.querySelectorAll('.message-bubble').forEach(el => el.classList.remove('ring-2', 'ring-cyan-500', 'bg-slate-700'));
+        
+        selectedMessageId = idx;
+        document.querySelector(`[data-id="${idx}"]`).classList.add('ring-2', 'ring-cyan-500', 'bg-slate-700');
+        
+        // Check if correct
+        const isCorrect = currentPrompt.messages[idx].isTarget;
+        showFeedback(isCorrect);
+    }
+
+    function showFeedback(isCorrect) {
+        const container = document.getElementById('feedback-container');
+        const xp = isCorrect ? 50 : -10;
+        totalXpEarned += Math.max(0, xp);
+        
+        if (isCorrect) {
+            container.innerHTML = `
+                <i class="fa-solid fa-check-circle text-5xl text-emerald-400 mb-3"></i>
+                <h4 class="text-green-400 font-bold mb-2">Correct!</h4>
+                <p class="text-slate-300 text-sm mb-4">${currentPrompt.explanation}</p>
+                <div class="text-2xl font-bold text-emerald-400 mb-4">+${xp} XP</div>
+                <button onclick="nextExercise()" class="w-full bg-gradient-to-r from-cyan-500 to-blue-500 text-white py-2 rounded font-bold text-sm hover:brightness-110">
+                    Next Exercise →
+                </button>
+            `;
+        } else {
+            container.innerHTML = `
+                <i class="fa-solid fa-xmark-circle text-5xl text-rose-400 mb-3"></i>
+                <h4 class="text-rose-400 font-bold mb-2">Incorrect</h4>
+                <p class="text-slate-300 text-sm mb-4">${currentPrompt.explanation}</p>
+                <div class="text-2xl font-bold text-rose-400 mb-4">${xp} XP</div>
+                <button onclick="nextExercise()" class="w-full bg-slate-800 hover:bg-slate-700 text-slate-300 py-2 rounded font-bold text-sm">
+                    Continue →
+                </button>
+            `;
+        }
+        
+        // Award XP to backend
+        backend.submitTrainingResults('module1', {
+            xp: Math.max(0, xp),
+            exercise: currentExercise + 1,
+            correct: isCorrect
+        });
+    }
+
+    function nextExercise() {
+        currentExercise++;
+        if (currentExercise >= 10) {
+            showComplete();
+        } else {
+            loadExercise();
+        }
+    }
+
+    function showComplete() {
+        document.getElementById('messages-container').parentElement.parentElement.classList.add('hidden');
+        document.getElementById('complete-screen').classList.remove('hidden');
+        document.getElementById('total-xp').textContent = `Total XP Earned: +${totalXpEarned}`;
+    }
+
+    // Initialize
+    document.addEventListener('DOMContentLoaded', init);
+</script>
+<script src="/static/js/backend.js"></script>
+
+{% endblock %}

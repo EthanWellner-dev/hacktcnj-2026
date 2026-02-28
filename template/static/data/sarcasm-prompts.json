@@ -1,0 +1,202 @@
+[
+  {
+    "id": 1,
+    "messages": [
+      { "sender": "ai", "text": "Hey, did anyone send the final report to Sarah?" },
+      { "sender": "user", "text": "Not yet, I was waiting on the data team." },
+      { "sender": "ai", "text": "I mean, take your time. It's only the biggest client we have. No rush.", "isTarget": true },
+      { "sender": "ai", "text": "I can help compile it later tonight if needed." }
+    ],
+    "explanation": "\"No rush\" combined with \"only the biggest client\" is highly contradictory and indicates passive-aggression."
+  },
+  {
+    "id": 2,
+    "messages": [
+      { "sender": "ai", "text": "Did you get my email about the meeting change?" },
+      { "sender": "user", "text": "Which one? You sent like 5 today." },
+      { "sender": "ai", "text": "Oh wow, only 5? I must be slacking.", "isTarget": true },
+      { "sender": "ai", "text": "It's the one about Friday's standup." }
+    ],
+    "explanation": "\"I must be slacking\" is clearly sarcastic—the user implied the person sent many emails, not few."
+  },
+  {
+    "id": 3,
+    "messages": [
+      { "sender": "ai", "text": "The new design mockups are ready for review." },
+      { "sender": "user", "text": "Great! I'll check them tomorrow." },
+      { "sender": "ai", "text": "Tomorrow? Perfect. I love waiting.", "isTarget": true },
+      { "sender": "ai", "text": "No pressure though, take your time." }
+    ],
+    "explanation": "\"I love waiting\" is sarcastic—combined with \"take your time,\" it masks frustration."
+  },
+  {
+    "id": 4,
+    "messages": [
+      { "sender": "ai", "text": "Has anyone tested the beta yet?" },
+      { "sender": "user", "text": "Not yet, it's on my list." },
+      { "sender": "ai", "text": "Your list? Wow, must be moving fast.", "isTarget": true },
+      { "sender": "ai", "text": "We launch next week so whenever is fine." }
+    ],
+    "explanation": "\"Must be moving fast\" is passive-aggressive sarcasm suggesting the person isn't prioritizing."
+  },
+  {
+    "id": 5,
+    "messages": [
+      { "sender": "ai", "text": "Hey, we need those files for the presentation." },
+      { "sender": "user", "text": "Yeah, I know. Busy with other stuff right now." },
+      { "sender": "ai", "text": "Ah, other stuff. That's important too.", "isTarget": true },
+      { "sender": "ai", "text": "But seriously, can you prioritize this?" }
+    ],
+    "explanation": "\"Other stuff\" dismissal is sarcastic—implying the user's other work isn't actually important."
+  },
+  {
+    "id": 6,
+    "messages": [
+      { "sender": "ai", "text": "I'm pushing the deadline to next Monday." },
+      { "sender": "user", "text": "I'm still working on it." },
+      { "sender": "ai", "text": "Oh, still working? That's news to me.", "isTarget": true },
+      { "sender": "ai", "text": "Let me know if you need more time." }
+    ],
+    "explanation": "\"That's news to me\" is hostile sarcasm, suggesting disbelief or doubt."
+  },
+  {
+    "id": 7,
+    "messages": [
+      { "sender": "ai", "text": "Did you update the documentation?" },
+      { "sender": "user", "text": "I started on it." },
+      { "sender": "ai", "text": "Started? Wow, almost halfway there.", "isTarget": true },
+      { "sender": "ai", "text": "Would love to see what you have so far." }
+    ],
+    "explanation": "Implying \"started\" means 50% done is sarcastic and dismissive of the effort."
+  },
+  {
+    "id": 8,
+    "messages": [
+      { "sender": "ai", "text": "Can you review my code before the merge?" },
+      { "sender": "user", "text": "I'll get to it when I can." },
+      { "sender": "ai", "text": "When you can? Sure, no problem. Merging now.", "isTarget": true },
+      { "sender": "ai", "text": "Hopefully no major issues." }
+    ],
+    "explanation": "\"When you can\" is sarcasm masking frustration about slow code review."
+  },
+  {
+    "id": 9,
+    "messages": [
+      { "sender": "ai", "text": "The client is asking for updates." },
+      { "sender": "user", "text": "Tell them we're on track." },
+      { "sender": "ai", "text": "On track? That's... creative.", "isTarget": true },
+      { "sender": "ai", "text": "I'll manage expectations with them." }
+    ],
+    "explanation": "\"Creative\" is sarcasm implying the claim of being \"on track\" is dishonest or optimistic."
+  },
+  {
+    "id": 10,
+    "messages": [
+      { "sender": "ai", "text": "These bugs keep piling up." },
+      { "sender": "user", "text": "Yeah, we'll squash them soon." },
+      { "sender": "ai", "text": "Soon? That's what you said last sprint.", "isTarget": true },
+      { "sender": "ai", "text": "We need a real plan." }
+    ],
+    "explanation": "Repeating \"soon\" sarcastically implies past promises weren't kept."
+  },
+  {
+    "id": 11,
+    "messages": [
+      { "sender": "ai", "text": "How's the feature coming along?" },
+      { "sender": "user", "text": "Stuck on one part." },
+      { "sender": "ai", "text": "One part? Lucky you.", "isTarget": true },
+      { "sender": "ai", "text": "What do you need help with?" }
+    ],
+    "explanation": "\"Lucky you\" is sarcastic, implying the user has an easy time compared to others."
+  },
+  {
+    "id": 12,
+    "messages": [
+      { "sender": "ai", "text": "Did you deploy the hotfix?" },
+      { "sender": "user", "text": "It's staging, not prod yet." },
+      { "sender": "ai", "text": "Staging is great for production issues.", "isTarget": true },
+      { "sender": "ai", "text": "Let's get it live ASAP." }
+    ],
+    "explanation": "\"Staging is great for production issues\" is passive-aggressive sarcasm."
+  },
+  {
+    "id": 13,
+    "messages": [
+      { "sender": "ai", "text": "The team's feedback on your proposal?" },
+      { "sender": "user", "text": "I haven't collected it yet." },
+      { "sender": "ai", "text": "Haven't collected it? We ship in 3 days.", "isTarget": true },
+      { "sender": "ai", "text": "Might be worth expediting." }
+    ],
+    "explanation": "The contrast between \"haven't collected\" and the tight timeline is sarcastic criticism."
+  },
+  {
+    "id": 14,
+    "messages": [
+      { "sender": "ai", "text": "Can you finalize the contract?" },
+      { "sender": "user", "text": "I'll review it tonight." },
+      { "sender": "ai", "text": "Tonight? That's dedicated of you.", "isTarget": true },
+      { "sender": "ai", "text": "We need it signed by EOD today." }
+    ],
+    "explanation": "\"Dedicated\" when the deadline is today is blatantly sarcastic."
+  },
+  {
+    "id": 15,
+    "messages": [
+      { "sender": "ai", "text": "Status update on the migration?" },
+      { "sender": "user", "text": "We're progressing steadily." },
+      { "sender": "ai", "text": "Steadily? We're 2 weeks behind schedule.", "isTarget": true },
+      { "sender": "ai", "text": "Need a faster pace." }
+    ],
+    "explanation": "Responding to \"steadily\" with \"2 weeks behind\" is sarcastic critique of progress."
+  },
+  {
+    "id": 16,
+    "messages": [
+      { "sender": "ai", "text": "The client's happy with the deliverables?" },
+      { "sender": "user", "text": "They had some feedback." },
+      { "sender": "ai", "text": "Some feedback? Just some?", "isTarget": true },
+      { "sender": "ai", "text": "What did they actually say?" }
+    ],
+    "explanation": "\"Just some?\" sarcastically implies the feedback was more substantial than acknowledged."
+  },
+  {
+    "id": 17,
+    "messages": [
+      { "sender": "ai", "text": "Is the refactor almost done?" },
+      { "sender": "user", "text": "50% of the way there." },
+      { "sender": "ai", "text": "Only halfway? Must've been an easy estimate.", "isTarget": true },
+      { "sender": "ai", "text": "Let me know what you need." }
+    ],
+    "explanation": "\"Easy estimate\" is sarcasm suggesting the original timeline was unrealistic."
+  },
+  {
+    "id": 18,
+    "messages": [
+      { "sender": "ai", "text": "The tests are passing?" },
+      { "sender": "user", "text": "Most of them are." },
+      { "sender": "ai", "text": "Most? That's reassuring.", "isTarget": true },
+      { "sender": "ai", "text": "Which ones are failing?" }
+    ],
+    "explanation": "\"Reassuring\" is sarcastic—most passing still means failures exist."
+  },
+  {
+    "id": 19,
+    "messages": [
+      { "sender": "ai", "text": "Can we go over the requirements again?" },
+      { "sender": "user", "text": "They seem pretty clear to me." },
+      { "sender": "ai", "text": "Clear? We've had 3 revisions.", "isTarget": true },
+      { "sender": "ai", "text": "Let's align on scope." }
+    ],
+    "explanation": "3 revisions contradicts \"clear,\" making this sarcastic pushback."
+  },
+  {
+    "id": 20,
+    "messages": [
+      { "sender": "ai", "text": "Performance looking good?" },
+      { "sender": "user", "text": "No major issues so far." },
+      { "sender": "ai", "text": "No major issues? We're down 40% in load time.", "isTarget": true },
+      { "sender": "ai", "text": "That's actually critical." }
+    ],
+    "explanation": "\"No major issues\" contradicts 40% performance loss—sarcasm masking frustration."
+  }
+]
