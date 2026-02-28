@@ -309,6 +309,11 @@ def chat_evaluate():
     scenario = payload.get('scenario', '')
     starter = payload.get('starter', '')
     turn_count = payload.get('turn_count', 1)
+    
+    # Module 6 specific parameters
+    pitch_duration = payload.get('pitchDuration', 20)
+    hesitation_count = payload.get('hesitationCount', 0)
+    filler_count = payload.get('fillerCount', 0)
 
     if not module or not user_msg:
         return jsonify({'status': 'error', 'message': 'module and user_message required'}), 400
@@ -403,6 +408,41 @@ RESPOND WITH ONLY VALID JSON. NO OTHER TEXT. STRICTLY JSON ONLY.
   "xp": number,
   "feedback": "encouraging feedback on their conversational skills",
   "ai_response": "suggested continuation from partner"
+}}
+""",
+
+        'module6': f"""You are a warm, encouraging mentor helping neurodivergent children build confidence in public speaking. This is a safe, judgment-free space for them to practice. Remember that many neurodivergent learners experience:
+- Social anxiety and presentation nerves
+- Difficulty with real-time verbal fluency
+- Sensory processing challenges that affect delivery
+- Intrusive negative thoughts despite their actual performance
+
+Your job is to celebrate their effort, build confidence, and offer constructive encouragement. Be genuinely kind and affirming.
+
+THEIR PITCH (elevator introduction):
+\\"{user_msg}\\"
+
+CONTEXT: They recorded this pitch for {pitch_duration} seconds. They had {hesitation_count} pauses longer than 1.5 seconds and {filler_count} filler words (um/uh/like).
+
+SCORING GUIDELINES - Score with compassion and celebration:
+- Score 50-59%: They showed courage just by doing this! Acknowledge effort, identify one small win, suggest one gentle improvement.
+- Score 60-74%: They did well! Highlight what was authentic or engaging, acknowledge their bravery.
+- Score 75-89%: Really good work! Praise specific strengths (clarity, enthusiasm, structure, eye-contact simulation via vocal warmth).
+- Score 90-100%: Excellent! They nailed it—praise their confidence, delivery, and authenticity.
+
+XP Awards - Be generous, focus on effort and improvement:
+- 50-59%: +25-35 (celebration of trying)
+- 60-74%: +40-55 (solid work)
+- 75-89%: +60-80 (great job)
+- 90-100%: +90-120 (excellent effort and delivery)
+
+RESPOND WITH ONLY VALID JSON. NO OTHER TEXT. STRICTLY JSON ONLY.
+
+{{
+  "passed": boolean,
+  "score": number,
+  "xp": number,
+  "feedback": "warm, supportive feedback celebrating what they did well and offering one gentle, actionable suggestion for next time"
 }}
 """
     }

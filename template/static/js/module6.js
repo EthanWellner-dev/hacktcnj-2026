@@ -285,45 +285,66 @@ function stopRecording() {
     }
 }
 
-// --- Mock Backend Communication ---
-function analyzePitch() {
-    transcriptBox.innerHTML += '<br><br><span class="text-cyan-400 animate-pulse">Sending to Flask API & LLaMA 3...</span>';
+// --- AI-Powered Evaluation ---
+async function analyzePitch() {
+    transcriptBox.innerHTML += '<br><br><span class="text-cyan-400 animate-pulse">Sending to Gemini AI for evaluation...</span>';
     
-    // Simulate network latency & Flask/Vultr Processing
-    setTimeout(async () => {
+    // Get the current user token for authentication
+    const token = localStorage.getItem('auth_token');
+    if (!token) {
+        feedbackText.innerText = "Error: Not authenticated. Please log in again.";
+        feedbackPanel.classList.remove('hidden');
+        return;
+    }
+    
+    // Call AI evaluation endpoint
+    try {
+        const response = await fetch('/api/chat/evaluate', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({
+                module: 'module6',
+                user_message: fullTranscript || "No audio detected",
+                pitchDuration: pitchDuration,
+                hesitationCount: hesitationCount,
+                fillerCount: fillerCount
+            })
+        });
+
+        const data = await response.json();
+        
+        // Hide loading indicator and show transcript
         transcriptBox.innerHTML = fullTranscript || "<span class=\"text-slate-500\">No audio detected.</span>";
         feedbackPanel.classList.remove('hidden');
         
-        // Generate Dynamic Feedback based on score
-        let feedback = "";
-        if (confidenceScore > 80) {
-            feedback = `Excellent pitch. You kept a steady rhythm and limited filler words. You only hesitated ${hesitationCount} times and used ${fillerCount} filler words. Your confidence reads as authentic and professional.`;
-        } else if (confidenceScore > 50) {
-            feedback = `Not bad, but your nerves are showing. You used ${fillerCount} filler words (\"um/uh\") which undermined your authority. Try to embrace silence instead of filling it. You had ${hesitationCount} long awkward pauses.`;
+        if (data.status === 'success') {
+            // Display AI feedback
+            feedbackText.innerText = data.feedback || "Great effort on your pitch!";
+            
+            // Update XP display and award
+            const xpGain = data.xp || 0;
+            xpAwardSpan.textContent = `+${xpGain}`;
+            
+            // The backend already updated XP, so we'll just display it
+            if (xpGain > 0) {
+                console.log(`Awarded ${xpGain} XP for module 6 completion`);
+            }
         } else {
-            feedback = `Your pitch was derailed by hesitation. With ${hesitationCount} long pauses and ${fillerCount} filler words, you came across as unsure of your own value. Remember to breathe and slow down.`;
+            feedbackText.innerText = data.message || "Unable to get feedback at this moment. Great effort!";
+            xpAwardSpan.textContent = `+25`;
         }
+    } catch (err) {
+        console.error("Error calling AI evaluation:", err);
+        feedbackText.innerText = "Great effort on your pitch! (Feedback service temporarily unavailable)";
         
-        feedbackText.innerText = feedback;
-        
-        // calculate xp gain based on performance and duration
-        // formula: proportion of confidence * allowed duration, penalised by
-        // filler words & hesitations, minimum 5xp
+        // Fallback XP award
         let xpGain = Math.round((confidenceScore / 100) * pitchDuration);
-        xpGain -= fillerCount * 2;
-        xpGain -= hesitationCount * 5;
-        xpGain = Math.max(5, xpGain);
+        xpGain = Math.max(25, xpGain);
         xpAwardSpan.textContent = `+${xpGain}`;
-        // send detailed results to backend and let it update xp
-        await backend.submitTrainingResults('module6', {
-            xp: xpGain,
-            confidence: confidenceScore,
-            filler: fillerCount,
-            hesitation: hesitationCount,
-            duration: pitchDuration
-        });
-        
-    }, 2000);
+    }
 }
 
 // --- Event Listeners ---
