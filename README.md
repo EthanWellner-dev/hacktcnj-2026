@@ -78,12 +78,14 @@ Privacy First: By bypassing standard OpenAI wrappers and running LLaMA 3 locally
    cd backend
    python -m venv .venv
    .\.venv\Scripts\Activate.ps1   # or activate.bat on cmd
+   # make sure you installed PyJWT not the conflicting `jwt` package
+   pip uninstall jwt -y || echo "no jwt package"
    pip install -r requirements.txt
    # set MONGODB_URI if using a remote Atlas or non-default host
    # $env:MONGODB_URI="mongodb://user:pass@host:27017/"
    python app.py
    ```
-   The Flask API will start on `http://127.0.0.1:5000` and also serve the static front-end.  It now supports `/api/users/signup`, `/api/users/login` (both POST with json `{username,password,persona}`) and `/api/users/leaderboard`.
+   The Flask API will start on `http://127.0.0.1:5000` and also serve the static front-end.  It now supports `/api/users/signup`, `/api/users/login` (both POST with json `{username,password,persona}`) and `/api/users/leaderboard`.  The UI has separate pages: `/` for login, `/dashboard` for the user lounge (logout is top‑right), and `/modules` for the module directory.  The dashboard no longer shows sensitive cluster info and logout lives in the header.
 
 2. **Frontend** – the HTML/JS lives in the `template/` folder. Open `http://127.0.0.1:5000/` in a browser after the backend is running. The initial page provides a login/signup form and leaderboard.  Further UI modules will be built in this directory.
 

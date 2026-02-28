@@ -44,6 +44,9 @@ function showXP(xp) {
 }
 
 function setupButtons() {
+    document.getElementById('btn-modules').addEventListener('click', () => {
+        window.location.href = '/modules';
+    });
     document.getElementById('btn-digital').addEventListener('click', () => {
         document.getElementById('gym-area').innerHTML = `<h4 class="text-slate-100 font-medium">Gym 1: Digital Comm Suite</h4><p class="text-slate-400">Open chat-module.html (not yet implemented)</p>`;
     });

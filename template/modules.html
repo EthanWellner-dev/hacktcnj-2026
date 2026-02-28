@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+{% block title %}Modules &mdash; Social Sandbox{% endblock %}
+{% block content %}
+<div class="min-h-screen flex items-center justify-center p-6">
+  <div class="w-full max-w-3xl glass p-6 md:p-10">
+    <h1 class="text-2xl font-semibold text-slate-100 mb-4">Module Directory</h1>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div class="p-4 bg-slate-900/40 rounded-xl">
+        <h2 class="font-medium">Sarcasm Sweeper</h2>
+      </div>
+      <div class="p-4 bg-slate-900/40 rounded-xl">
+        <h2 class="font-medium">The Icebreaker</h2>
+      </div>
+      <div class="p-4 bg-slate-900/40 rounded-xl">
+        <h2 class="font-medium">Hint Hunter</h2>
+      </div>
+      <div class="p-4 bg-slate-900/40 rounded-xl">
+        <h2 class="font-medium">The Ping-Pong Protocol</h2>
+      </div>
+      <div class="p-4 bg-slate-900/40 rounded-xl">
+        <h2 class="font-medium">Tone Check (The De-Escalator)</h2>
+      </div>
+      <div class="p-4 bg-slate-900/40 rounded-xl">
+        <h2 class="font-medium">The Pitch (Confidence Calibration)</h2>
+      </div>
+      <div class="p-4 bg-slate-900/40 rounded-xl">
+        <h2 class="font-medium">The Emotion Matrix</h2>
+      </div>
+      <div class="p-4 bg-slate-900/40 rounded-xl">
+        <h2 class="font-medium">The Masking Mirror</h2>
+      </div>
+    </div>
+    <div class="mt-6">
+      <a href="/dashboard" class="text-cyan-400 underline">Back to dashboard</a>
+    </div>
+  </div>
+</div>
+{% endblock %}
