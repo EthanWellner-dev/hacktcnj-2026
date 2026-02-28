@@ -3,35 +3,106 @@
 {% block content %}
 <div class="min-h-screen flex items-center justify-center p-6">
   <div class="w-full max-w-3xl glass p-6 md:p-10">
-    <h1 class="text-2xl font-semibold text-slate-100 mb-4">Module Directory</h1>
+    <h1 class="text-2xl font-semibold text-slate-100 mb-6">Module Directory</h1>
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-      <div class="p-4 bg-slate-900/40 rounded-xl">
-        <h2 class="font-medium">Sarcasm Sweeper</h2>
-      </div>
-      <div class="p-4 bg-slate-900/40 rounded-xl">
-        <h2 class="font-medium">The Icebreaker</h2>
-      </div>
-      <div class="p-4 bg-slate-900/40 rounded-xl">
-        <h2 class="font-medium">Hint Hunter</h2>
-      </div>
-      <div class="p-4 bg-slate-900/40 rounded-xl">
-        <h2 class="font-medium">The Ping-Pong Protocol</h2>
-      </div>
-      <div class="p-4 bg-slate-900/40 rounded-xl">
-        <h2 class="font-medium">Tone Check (The De-Escalator)</h2>
-      </div>
-      <a href="/module6" class="block p-4 bg-slate-900/40 rounded-xl hover:bg-slate-800/60 transition-colors">
-        <h2 class="font-medium">The Pitch (Confidence Calibration)</h2>
+      <!-- Module 1: Sarcasm Sweeper -->
+      <a href="/module1" class="p-4 bg-slate-900/40 rounded-xl hover:bg-slate-800/60 transition-colors border border-white/5 hover:border-cyan-500/50">
+        <div class="flex items-start gap-3">
+          <div class="text-2xl text-cyan-400 flex-shrink-0">
+            <i class="fa-solid fa-radar"></i>
+          </div>
+          <h2 class="font-medium text-white">Sarcasm Sweeper</h2>
+        </div>
+        <p class="text-xs text-slate-400 mt-2">Identify passive-aggression in chat</p>
       </a>
-      <div class="p-4 bg-slate-900/40 rounded-xl">
-        <h2 class="font-medium">The Emotion Matrix</h2>
+      
+      <!-- Module 2: The Icebreaker -->
+      <a href="/module2" class="p-4 bg-slate-900/40 rounded-xl hover:bg-slate-800/60 transition-colors border border-white/5 hover:border-cyan-500/50">
+        <div class="flex items-start gap-3">
+          <div class="text-2xl text-cyan-400 flex-shrink-0">
+            <i class="fa-solid fa-snowflake"></i>
+          </div>
+          <h2 class="font-medium text-white">The Icebreaker</h2>
+        </div>
+        <p class="text-xs text-slate-400 mt-2">Establish rapport with cold texts</p>
+      </a>
+      
+      <!-- Module 3: Hint Hunter -->
+      <a href="/module3" class="p-4 bg-slate-900/40 rounded-xl hover:bg-slate-800/60 transition-colors border border-white/5 hover:border-cyan-500/50">
+        <div class="flex items-start gap-3">
+          <div class="text-2xl text-cyan-400 flex-shrink-0">
+            <i class="fa-solid fa-magnifying-glass"></i>
+          </div>
+          <h2 class="font-medium text-white">Hint Hunter</h2>
+        </div>
+        <p class="text-xs text-slate-400 mt-2">Read social cues and graceful exits</p>
+      </a>
+      
+      <!-- Module 4: The Ping-Pong Protocol -->
+      <a href="/module4" class="p-4 bg-slate-900/40 rounded-xl hover:bg-slate-800/60 transition-colors border border-white/5 hover:border-cyan-500/50">
+        <div class="flex items-start gap-3">
+          <div class="text-2xl text-cyan-400 flex-shrink-0">
+            <i class="fa-solid fa-comments"></i>
+          </div>
+          <h2 class="font-medium text-white">Ping-Pong Protocol</h2>
+        </div>
+        <p class="text-xs text-slate-400 mt-2">Maintain conversation momentum</p>
+      </a>
+      
+      <!-- Module 5: Tone Check (Coming Soon) -->
+      <div class="p-4 bg-slate-900/20 rounded-xl border border-white/5 opacity-60">
+        <div class="flex items-start gap-3">
+          <div class="text-2xl text-slate-500 flex-shrink-0">
+            <i class="fa-solid fa-volume-up"></i>
+          </div>
+          <div class="flex-1">
+            <h2 class="font-medium text-slate-400">Tone Check</h2>
+            <p class="text-xs text-slate-500 mt-2">Coming soon...</p>
+          </div>
+        </div>
       </div>
-      <div class="p-4 bg-slate-900/40 rounded-xl">
-        <h2 class="font-medium">The Masking Mirror</h2>
+      
+      <!-- Module 6: The Pitch -->
+      <a href="/module6" class="p-4 bg-slate-900/40 rounded-xl hover:bg-slate-800/60 transition-colors border border-white/5 hover:border-cyan-500/50">
+        <div class="flex items-start gap-3">
+          <div class="text-2xl text-cyan-400 flex-shrink-0">
+            <i class="fa-solid fa-microphone"></i>
+          </div>
+          <h2 class="font-medium text-white">The Pitch</h2>
+        </div>
+        <p class="text-xs text-slate-400 mt-2">Confidence calibration & delivery</p>
+      </a>
+      
+      <!-- Module 7: The Emotion Matrix (Coming Soon) -->
+      <div class="p-4 bg-slate-900/20 rounded-xl border border-white/5 opacity-60">
+        <div class="flex items-start gap-3">
+          <div class="text-2xl text-slate-500 flex-shrink-0">
+            <i class="fa-solid fa-face-smile"></i>
+          </div>
+          <div class="flex-1">
+            <h2 class="font-medium text-slate-400">Emotion Matrix</h2>
+            <p class="text-xs text-slate-500 mt-2">Coming soon...</p>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Module 8: The Masking Mirror (Coming Soon) -->
+      <div class="p-4 bg-slate-900/20 rounded-xl border border-white/5 opacity-60">
+        <div class="flex items-start gap-3">
+          <div class="text-2xl text-slate-500 flex-shrink-0">
+            <i class="fa-solid fa-mask"></i>
+          </div>
+          <div class="flex-1">
+            <h2 class="font-medium text-slate-400">Masking Mirror</h2>
+            <p class="text-xs text-slate-500 mt-2">Coming soon...</p>
+          </div>
+        </div>
       </div>
     </div>
-    <div class="mt-6">
-      <a href="/dashboard" class="text-cyan-400 underline">Back to dashboard</a>
+    <div class="mt-8 pt-6 border-t border-white/10">
+      <a href="/dashboard" class="text-cyan-400 hover:text-cyan-300 underline transition-colors">
+        <i class="fa-solid fa-arrow-left mr-2"></i>Back to dashboard
+      </a>
     </div>
   </div>
 </div>
