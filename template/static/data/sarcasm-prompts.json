@@ -2,201 +2,410 @@
   {
     "id": 1,
     "messages": [
-      { "sender": "ai", "text": "Hey, did anyone send the final report to Sarah?" },
-      { "sender": "user", "text": "Not yet, I was waiting on the data team." },
-      { "sender": "ai", "text": "I mean, take your time. It's only the biggest client we have. No rush.", "isTarget": true },
-      { "sender": "ai", "text": "I can help compile it later tonight if needed." }
+      { "sender": "user", "text": "I completely forgot about the compliance training." },
+      { "sender": "ai", "text": "Shocking. You're usually so on top of mandatory tasks.", "isTarget": true },
+      { "sender": "user", "text": "I'll get it done by EOD." }
     ],
-    "explanation": "\"No rush\" combined with \"only the biggest client\" is highly contradictory and indicates passive-aggression."
+    "explanation": "\"Shocking\" is used sarcastically to highlight the user's failure to remember a mandatory task."
   },
   {
     "id": 2,
     "messages": [
-      { "sender": "ai", "text": "Did you get my email about the meeting change?" },
-      { "sender": "user", "text": "Which one? You sent like 5 today." },
-      { "sender": "ai", "text": "Oh wow, only 5? I must be slacking.", "isTarget": true },
-      { "sender": "ai", "text": "It's the one about Friday's standup." }
+      { "sender": "ai", "text": "Did you push the new code?" },
+      { "sender": "user", "text": "Yes, just now." },
+      { "sender": "ai", "text": "Without running the test suite?" },
+      { "sender": "ai", "text": "Bold strategy. Let's see if production likes it.", "isTarget": true },
+      { "sender": "user", "text": "Wait, let me revert." }
     ],
-    "explanation": "\"I must be slacking\" is clearly sarcastic—the user implied the person sent many emails, not few."
+    "explanation": "Calling the reckless action a \"bold strategy\" is sarcastic and highlights the danger of not testing."
   },
   {
     "id": 3,
     "messages": [
-      { "sender": "ai", "text": "The new design mockups are ready for review." },
-      { "sender": "user", "text": "Great! I'll check them tomorrow." },
-      { "sender": "ai", "text": "Tomorrow? Perfect. I love waiting.", "isTarget": true },
-      { "sender": "ai", "text": "No pressure though, take your time." }
+      { "sender": "user", "text": "I can't find the onboarding documentation." },
+      { "sender": "ai", "text": "It's literally pinned in the general channel." },
+      { "sender": "user", "text": "Oh, I don't really look at pinned messages." },
+      { "sender": "ai", "text": "Clearly. Why use the tools we have when you can just ask?", "isTarget": true }
     ],
-    "explanation": "\"I love waiting\" is sarcastic—combined with \"take your time,\" it masks frustration."
+    "explanation": "The AI uses passive-aggression to point out the user's unwillingness to look for easily accessible information."
   },
   {
     "id": 4,
     "messages": [
-      { "sender": "ai", "text": "Has anyone tested the beta yet?" },
-      { "sender": "user", "text": "Not yet, it's on my list." },
-      { "sender": "ai", "text": "Your list? Wow, must be moving fast.", "isTarget": true },
-      { "sender": "ai", "text": "We launch next week so whenever is fine." }
+      { "sender": "ai", "text": "We need this approved by 5 PM." },
+      { "sender": "user", "text": "I'm heading out early today, actually." },
+      { "sender": "ai", "text": "Oh, perfect. I'll just forge your signature. No big deal.", "isTarget": true }
     ],
-    "explanation": "\"Must be moving fast\" is passive-aggressive sarcasm suggesting the person isn't prioritizing."
+    "explanation": "Offering to commit forgery is a sarcastic exaggeration to show frustration over the user leaving early."
   },
   {
     "id": 5,
     "messages": [
-      { "sender": "ai", "text": "Hey, we need those files for the presentation." },
-      { "sender": "user", "text": "Yeah, I know. Busy with other stuff right now." },
-      { "sender": "ai", "text": "Ah, other stuff. That's important too.", "isTarget": true },
-      { "sender": "ai", "text": "But seriously, can you prioritize this?" }
+      { "sender": "user", "text": "The main server is down." },
+      { "sender": "ai", "text": "Did you try restarting the instance?" },
+      { "sender": "user", "text": "No." },
+      { "sender": "ai", "text": "Why not?" },
+      { "sender": "ai", "text": "Just waiting for it to magically fix itself? Love that.", "isTarget": true },
+      { "sender": "user", "text": "I just didn't want to break anything else." }
     ],
-    "explanation": "\"Other stuff\" dismissal is sarcastic—implying the user's other work isn't actually important."
+    "explanation": "\"Love that\" combined with the suggestion of magic is a sarcastic critique of the user's inaction."
   },
   {
     "id": 6,
     "messages": [
-      { "sender": "ai", "text": "I'm pushing the deadline to next Monday." },
-      { "sender": "user", "text": "I'm still working on it." },
-      { "sender": "ai", "text": "Oh, still working? That's news to me.", "isTarget": true },
-      { "sender": "ai", "text": "Let me know if you need more time." }
+      { "sender": "user", "text": "I'm going to take a 3-hour lunch for an appointment." },
+      { "sender": "ai", "text": "Wow, a whole 3 hours? Don't overwork yourself.", "isTarget": true },
+      { "sender": "ai", "text": "Just make sure your phone is on in case of an emergency." },
+      { "sender": "user", "text": "Will do." }
     ],
-    "explanation": "\"That's news to me\" is hostile sarcasm, suggesting disbelief or doubt."
+    "explanation": "Telling someone taking a very long break not to \"overwork\" themselves is purely sarcastic."
   },
   {
     "id": 7,
     "messages": [
-      { "sender": "ai", "text": "Did you update the documentation?" },
-      { "sender": "user", "text": "I started on it." },
-      { "sender": "ai", "text": "Started? Wow, almost halfway there.", "isTarget": true },
-      { "sender": "ai", "text": "Would love to see what you have so far." }
+      { "sender": "ai", "text": "Here are the revisions from the design team." },
+      { "sender": "user", "text": "I'll look at them next week." },
+      { "sender": "ai", "text": "Next week? Excellent. The client only needed them yesterday.", "isTarget": true },
+      { "sender": "ai", "text": "But sure, take your time." },
+      { "sender": "user", "text": "Okay, fine, I'll do it tonight." }
     ],
-    "explanation": "Implying \"started\" means 50% done is sarcastic and dismissive of the effort."
+    "explanation": "Calling a delayed timeline \"excellent\" when it's already past due is classic passive-aggression."
   },
   {
     "id": 8,
     "messages": [
-      { "sender": "ai", "text": "Can you review my code before the merge?" },
-      { "sender": "user", "text": "I'll get to it when I can." },
-      { "sender": "ai", "text": "When you can? Sure, no problem. Merging now.", "isTarget": true },
-      { "sender": "ai", "text": "Hopefully no major issues." }
+      { "sender": "user", "text": "I haven't started the slide deck yet." },
+      { "sender": "ai", "text": "Brilliant. The meeting is in ten minutes.", "isTarget": true },
+      { "sender": "user", "text": "I can probably wing it." }
     ],
-    "explanation": "\"When you can\" is sarcasm masking frustration about slow code review."
+    "explanation": "\"Brilliant\" is used sarcastically to highlight the absurdity of not being prepared right before a meeting."
   },
   {
     "id": 9,
     "messages": [
-      { "sender": "ai", "text": "The client is asking for updates." },
-      { "sender": "user", "text": "Tell them we're on track." },
-      { "sender": "ai", "text": "On track? That's... creative.", "isTarget": true },
-      { "sender": "ai", "text": "I'll manage expectations with them." }
+      { "sender": "ai", "text": "Can you send the invoice to accounting?" },
+      { "sender": "user", "text": "I accidentally sent it to the client again." },
+      { "sender": "ai", "text": "Again?" },
+      { "sender": "ai", "text": "You really have a gift for finding new ways to delay payments.", "isTarget": true }
     ],
-    "explanation": "\"Creative\" is sarcasm implying the claim of being \"on track\" is dishonest or optimistic."
+    "explanation": "Framing repeated mistakes as a \"gift\" is a sarcastic way to express frustration."
   },
   {
     "id": 10,
     "messages": [
-      { "sender": "ai", "text": "These bugs keep piling up." },
-      { "sender": "user", "text": "Yeah, we'll squash them soon." },
-      { "sender": "ai", "text": "Soon? That's what you said last sprint.", "isTarget": true },
-      { "sender": "ai", "text": "We need a real plan." }
+      { "sender": "user", "text": "I broke the main build." },
+      { "sender": "ai", "text": "Oh, fantastic. Our favorite Friday afternoon activity.", "isTarget": true },
+      { "sender": "ai", "text": "What exactly did you do?" },
+      { "sender": "user", "text": "Missed a semicolon." },
+      { "sender": "ai", "text": "I'm rolling back your commit now." }
     ],
-    "explanation": "Repeating \"soon\" sarcastically implies past promises weren't kept."
+    "explanation": "Calling a broken build a \"favorite activity\" is sarcastic and highlights the annoyance of Friday emergencies."
   },
   {
     "id": 11,
     "messages": [
-      { "sender": "ai", "text": "How's the feature coming along?" },
-      { "sender": "user", "text": "Stuck on one part." },
-      { "sender": "ai", "text": "One part? Lucky you.", "isTarget": true },
-      { "sender": "ai", "text": "What do you need help with?" }
+      { "sender": "user", "text": "I really don't understand the assignment." },
+      { "sender": "ai", "text": "Did you read the project brief?" },
+      { "sender": "ai", "text": "Or did you just skim the title and hope for the best?", "isTarget": true },
+      { "sender": "user", "text": "I skimmed it." }
     ],
-    "explanation": "\"Lucky you\" is sarcastic, implying the user has an easy time compared to others."
+    "explanation": "The AI sarcastically suggests the user put in zero effort before asking for help."
   },
   {
     "id": 12,
     "messages": [
-      { "sender": "ai", "text": "Did you deploy the hotfix?" },
-      { "sender": "user", "text": "It's staging, not prod yet." },
-      { "sender": "ai", "text": "Staging is great for production issues.", "isTarget": true },
-      { "sender": "ai", "text": "Let's get it live ASAP." }
+      { "sender": "ai", "text": "Please tell me you saved a backup of the database." },
+      { "sender": "user", "text": "I thought you did." },
+      { "sender": "ai", "text": "Yes, because I'm psychic and knew you'd delete the master file.", "isTarget": true }
     ],
-    "explanation": "\"Staging is great for production issues\" is passive-aggressive sarcasm."
+    "explanation": "Claiming to be psychic is a sarcastic way of rejecting blame for the user's mistake."
   },
   {
     "id": 13,
     "messages": [
-      { "sender": "ai", "text": "The team's feedback on your proposal?" },
-      { "sender": "user", "text": "I haven't collected it yet." },
-      { "sender": "ai", "text": "Haven't collected it? We ship in 3 days.", "isTarget": true },
-      { "sender": "ai", "text": "Might be worth expediting." }
+      { "sender": "user", "text": "I need an extension on this." },
+      { "sender": "ai", "text": "The deadline was a month ago." },
+      { "sender": "user", "text": "I know, but I've been super busy." },
+      { "sender": "ai", "text": "Busy doing what? Watching paint dry?", "isTarget": true },
+      { "sender": "ai", "text": "I can give you exactly one more day." },
+      { "sender": "user", "text": "Thanks, I appreciate it." }
     ],
-    "explanation": "The contrast between \"haven't collected\" and the tight timeline is sarcastic criticism."
+    "explanation": "\"Watching paint dry\" sarcastically questions the legitimacy of the user's excuse."
   },
   {
     "id": 14,
     "messages": [
-      { "sender": "ai", "text": "Can you finalize the contract?" },
-      { "sender": "user", "text": "I'll review it tonight." },
-      { "sender": "ai", "text": "Tonight? That's dedicated of you.", "isTarget": true },
-      { "sender": "ai", "text": "We need it signed by EOD today." }
+      { "sender": "user", "text": "I don't have the data, I'll just guess the numbers." },
+      { "sender": "ai", "text": "Great idea. Finance loves when we just make things up.", "isTarget": true },
+      { "sender": "ai", "text": "Please actually run the proper report." },
+      { "sender": "user", "text": "Fine, running it now." }
     ],
-    "explanation": "\"Dedicated\" when the deadline is today is blatantly sarcastic."
+    "explanation": "\"Great idea\" is sarcastic, pointing out that guessing financial data is highly irresponsible."
   },
   {
     "id": 15,
     "messages": [
-      { "sender": "ai", "text": "Status update on the migration?" },
-      { "sender": "user", "text": "We're progressing steadily." },
-      { "sender": "ai", "text": "Steadily? We're 2 weeks behind schedule.", "isTarget": true },
-      { "sender": "ai", "text": "Need a faster pace." }
+      { "sender": "ai", "text": "Did you call the client to apologize?" },
+      { "sender": "user", "text": "I just emailed them." },
+      { "sender": "ai", "text": "They specifically asked for a phone call." },
+      { "sender": "user", "text": "I hate calling people." },
+      { "sender": "ai", "text": "Oh, well, as long as *you're* comfortable, who cares what the paying client wants?", "isTarget": true }
     ],
-    "explanation": "Responding to \"steadily\" with \"2 weeks behind\" is sarcastic critique of progress."
+    "explanation": "The AI uses heavy sarcasm to point out the user's selfish prioritization over client needs."
   },
   {
     "id": 16,
     "messages": [
-      { "sender": "ai", "text": "The client's happy with the deliverables?" },
-      { "sender": "user", "text": "They had some feedback." },
-      { "sender": "ai", "text": "Some feedback? Just some?", "isTarget": true },
-      { "sender": "ai", "text": "What did they actually say?" }
+      { "sender": "user", "text": "I'm not going to be able to finish my part by tomorrow." },
+      { "sender": "ai", "text": "What a delightful surprise. Truly unprecedented.", "isTarget": true },
+      { "sender": "user", "text": "Sorry, I overbooked my calendar." }
     ],
-    "explanation": "\"Just some?\" sarcastically implies the feedback was more substantial than acknowledged."
+    "explanation": "\"Delightful surprise\" and \"unprecedented\" sarcastically imply that the user failing to deliver is actually a common occurrence."
   },
   {
     "id": 17,
     "messages": [
-      { "sender": "ai", "text": "Is the refactor almost done?" },
-      { "sender": "user", "text": "50% of the way there." },
-      { "sender": "ai", "text": "Only halfway? Must've been an easy estimate.", "isTarget": true },
-      { "sender": "ai", "text": "Let me know what you need." }
+      { "sender": "ai", "text": "We need to optimize this database query." },
+      { "sender": "user", "text": "It runs in 10 seconds, that's fine." },
+      { "sender": "ai", "text": "10 seconds? Sure, users love waiting longer than a dial-up connection.", "isTarget": true },
+      { "sender": "ai", "text": "Let's add some indexes." }
     ],
-    "explanation": "\"Easy estimate\" is sarcasm suggesting the original timeline was unrealistic."
+    "explanation": "Comparing the wait time to dial-up is a sarcastic exaggeration to show that 10 seconds is unacceptable."
   },
   {
     "id": 18,
     "messages": [
-      { "sender": "ai", "text": "The tests are passing?" },
-      { "sender": "user", "text": "Most of them are." },
-      { "sender": "ai", "text": "Most? That's reassuring.", "isTarget": true },
-      { "sender": "ai", "text": "Which ones are failing?" }
+      { "sender": "user", "text": "I accidentally clicked the link in that sketchy email." },
+      { "sender": "ai", "text": "Of course you did. Phishing tests are just suggestions, anyway.", "isTarget": true },
+      { "sender": "ai", "text": "Disconnect from the VPN immediately." },
+      { "sender": "user", "text": "Done." },
+      { "sender": "ai", "text": "I'll alert the security team." }
     ],
-    "explanation": "\"Reassuring\" is sarcastic—most passing still means failures exist."
+    "explanation": "Calling security tests \"suggestions\" is sarcastic and highlights the severity of the user's mistake."
   },
   {
     "id": 19,
     "messages": [
-      { "sender": "ai", "text": "Can we go over the requirements again?" },
-      { "sender": "user", "text": "They seem pretty clear to me." },
-      { "sender": "ai", "text": "Clear? We've had 3 revisions.", "isTarget": true },
-      { "sender": "ai", "text": "Let's align on scope." }
+      { "sender": "user", "text": "The layout looks really weird now." },
+      { "sender": "ai", "text": "That's because you ignored the entire style guide." },
+      { "sender": "user", "text": "I thought I'd be creative." },
+      { "sender": "ai", "text": "Creative. Right. That's a polite word for 'mess'.", "isTarget": true }
     ],
-    "explanation": "3 revisions contradicts \"clear,\" making this sarcastic pushback."
+    "explanation": "The AI sarcastically redefines \"creative\" as a mess to shut down the user's excuse."
   },
   {
     "id": 20,
     "messages": [
-      { "sender": "ai", "text": "Performance looking good?" },
-      { "sender": "user", "text": "No major issues so far." },
-      { "sender": "ai", "text": "No major issues? We're down 40% in load time.", "isTarget": true },
-      { "sender": "ai", "text": "That's actually critical." }
+      { "sender": "ai", "text": "Are you paying attention to the training?" },
+      { "sender": "user", "text": "Sort of." },
+      { "sender": "ai", "text": "Ah, 'sort of' paying attention. The hallmark of a great team player.", "isTarget": true }
     ],
-    "explanation": "\"No major issues\" contradicts 40% performance loss—sarcasm masking frustration."
+    "explanation": "Sarcastic praise (\"hallmark of a great team player\") is used to criticize the user's lack of focus."
+  },
+  {
+    "id": 21,
+    "messages": [
+      { "sender": "user", "text": "I missed the morning standup." },
+      { "sender": "ai", "text": "You've missed three this week alone." },
+      { "sender": "user", "text": "I just sleep in sometimes." },
+      { "sender": "ai", "text": "Must be nice to treat the work schedule like a buffet.", "isTarget": true },
+      { "sender": "ai", "text": "Set an alarm for tomorrow." }
+    ],
+    "explanation": "Comparing work hours to a buffet sarcastically points out the user's sense of entitlement regarding their schedule."
+  },
+  {
+    "id": 22,
+    "messages": [
+      { "sender": "user", "text": "I actually left two hours early yesterday." },
+      { "sender": "ai", "text": "We noticed. The burning server was a dead giveaway.", "isTarget": true },
+      { "sender": "ai", "text": "Please let someone know next time." },
+      { "sender": "user", "text": "My bad." }
+    ],
+    "explanation": "The \"burning server\" comment is sarcastic, implying everything fell apart the moment the user left unannounced."
+  },
+  {
+    "id": 23,
+    "messages": [
+      { "sender": "ai", "text": "Can you fix the typo on the homepage?" },
+      { "sender": "user", "text": "It's just one letter missing." },
+      { "sender": "ai", "text": "It spells a bad word now." },
+      { "sender": "user", "text": "People will know what we meant." },
+      { "sender": "ai", "text": "Oh absolutely. Our new brand strategy is 'accidental profanity'.", "isTarget": true },
+      { "sender": "ai", "text": "Fix it now, please." }
+    ],
+    "explanation": "Sarcastic agreement regarding a ridiculous brand strategy highlights why the user's defense is invalid."
+  },
+  {
+    "id": 24,
+    "messages": [
+      { "sender": "user", "text": "I used Comic Sans for the executive summary." },
+      { "sender": "ai", "text": "Stunning choice. Are we designing a lemonade stand next?", "isTarget": true },
+      { "sender": "user", "text": "I'll change it back to Arial." }
+    ],
+    "explanation": "\"Stunning choice\" and the lemonade stand comparison sarcastically mock the unprofessional font selection."
+  },
+  {
+    "id": 25,
+    "messages": [
+      { "sender": "ai", "text": "The user metrics are down by 30%." },
+      { "sender": "user", "text": "Maybe it's a seasonal trend." },
+      { "sender": "ai", "text": "Yes, the famous 'middle of a random Tuesday' season.", "isTarget": true },
+      { "sender": "ai", "text": "Check the recent deployment logs." },
+      { "sender": "user", "text": "Checking them now." }
+    ],
+    "explanation": "Mocking the \"season\" of a random Tuesday is a sarcastic way to dismiss the user's weak excuse."
+  },
+  {
+    "id": 26,
+    "messages": [
+      { "sender": "user", "text": "I didn't take any notes during the call." },
+      { "sender": "ai", "text": "You were the designated note-taker." },
+      { "sender": "user", "text": "I have a really good memory." },
+      { "sender": "ai", "text": "Your memory is legendary, especially how you remember to forget things.", "isTarget": true }
+    ],
+    "explanation": "Calling their memory \"legendary\" before pointing out their forgetfulness is classic passive-aggressive sarcasm."
+  },
+  {
+    "id": 27,
+    "messages": [
+      { "sender": "ai", "text": "Is the new hire fully onboarded?" },
+      { "sender": "user", "text": "I sent them a welcome email yesterday." },
+      { "sender": "ai", "text": "One email. Wow. Try not to overwhelm them with support.", "isTarget": true }
+    ],
+    "explanation": "Warning the user not to \"overwhelm\" the new hire is sarcastic, implying one email is vastly insufficient."
+  },
+  {
+    "id": 28,
+    "messages": [
+      { "sender": "user", "text": "I just hit 'Reply All' to the entire company." },
+      { "sender": "ai", "text": "A bold move. Everyone definitely needed to know about your lunch order.", "isTarget": true },
+      { "sender": "ai", "text": "Can you recall the message?" },
+      { "sender": "user", "text": "It's too late." },
+      { "sender": "ai", "text": "Well, enjoy the sudden fame." }
+    ],
+    "explanation": "\"A bold move\" and stating that everyone \"needed to know\" sarcastically points out the user's careless mistake."
+  },
+  {
+    "id": 29,
+    "messages": [
+      { "sender": "ai", "text": "Did you secure the temporary database?" },
+      { "sender": "user", "text": "Yeah, the password is 'password123'." },
+      { "sender": "ai", "text": "Incredible. The hackers will never crack that masterclass of encryption.", "isTarget": true },
+      { "sender": "ai", "text": "Change it immediately." }
+    ],
+    "explanation": "Calling a weak password a \"masterclass of encryption\" is heavy sarcasm."
+  },
+  {
+    "id": 30,
+    "messages": [
+      { "sender": "user", "text": "I'm delegating the Q3 financial audit to the intern." },
+      { "sender": "ai", "text": "They literally started today." },
+      { "sender": "user", "text": "They'll learn faster this way." },
+      { "sender": "ai", "text": "It's a highly sensitive report." },
+      { "sender": "user", "text": "It's basically just data entry." },
+      { "sender": "ai", "text": "Right, 'data entry' that dictates our entire budget. What could go wrong?", "isTarget": true }
+    ],
+    "explanation": "\"What could go wrong?\" is a rhetorical, sarcastic question highlighting the user's terrible judgment."
+  },
+  {
+    "id": 31,
+    "messages": [
+      { "sender": "user", "text": "I ignored the memory usage warnings." },
+      { "sender": "ai", "text": "Of course. Warnings are just the computer being dramatic, right?", "isTarget": true },
+      { "sender": "user", "text": "Well, now it's completely frozen." }
+    ],
+    "explanation": "Personifying the computer as \"dramatic\" sarcastically mocks the user for ignoring legitimate system alerts."
+  },
+  {
+    "id": 32,
+    "messages": [
+      { "sender": "ai", "text": "You didn't mute your mic during the all-hands meeting." },
+      { "sender": "user", "text": "I was just typing!" },
+      { "sender": "ai", "text": "You were aggressively eating chips." },
+      { "sender": "ai", "text": "Really added a nice crunch to the CEO's speech.", "isTarget": true }
+    ],
+    "explanation": "Saying the crunch \"added a nice touch\" is sarcastic and highlights the unprofessional disruption."
+  },
+  {
+    "id": 33,
+    "messages": [
+      { "sender": "user", "text": "I'll review the pull request eventually." },
+      { "sender": "ai", "text": "It's been open for 14 days." },
+      { "sender": "ai", "text": "Let's aim for a month, really set a record.", "isTarget": true },
+      { "sender": "user", "text": "I've had other tickets." },
+      { "sender": "ai", "text": "This is blocking the entire release." }
+    ],
+    "explanation": "Encouraging the user to \"set a record\" for laziness is passive-aggressive sarcasm."
+  },
+  {
+    "id": 34,
+    "messages": [
+      { "sender": "user", "text": "I accidentally deleted the user table." },
+      { "sender": "ai", "text": "Awesome. Who needs users anyway? They just complain.", "isTarget": true },
+      { "sender": "ai", "text": "Restore from the backup right now." },
+      { "sender": "user", "text": "On it." }
+    ],
+    "explanation": "\"Awesome\" and dismissing the need for users is sarcastic coping for a massive mistake."
+  },
+  {
+    "id": 35,
+    "messages": [
+      { "sender": "ai", "text": "You scheduled the global meeting for 3 AM our time." },
+      { "sender": "user", "text": "Time zones are hard to figure out." },
+      { "sender": "ai", "text": "So true. Basic math is basically magic.", "isTarget": true }
+    ],
+    "explanation": "Equating basic time zone differences to \"magic\" is a sarcastic insult to the user's competence."
+  },
+  {
+    "id": 36,
+    "messages": [
+      { "sender": "user", "text": "I don't think we need a staging environment." },
+      { "sender": "ai", "text": "So we just deploy to production directly?" },
+      { "sender": "user", "text": "Yeah, it saves a lot of time." },
+      { "sender": "ai", "text": "It also saves us from having a stable product." },
+      { "sender": "ai", "text": "Living on the edge. I respect the dedication to absolute chaos.", "isTarget": true }
+    ],
+    "explanation": "\"Respect the dedication to absolute chaos\" sarcastically criticizes the user's reckless development practices."
+  },
+  {
+    "id": 37,
+    "messages": [
+      { "sender": "ai", "text": "The marketing copy has typos in the first sentence." },
+      { "sender": "user", "text": "Grammarly didn't catch them!" },
+      { "sender": "ai", "text": "Ah yes, blame the robot. Classic.", "isTarget": true },
+      { "sender": "user", "text": "I'll proofread it myself." }
+    ],
+    "explanation": "\"Blame the robot\" is sarcastic pushback against the user refusing to take accountability for their own writing."
+  },
+  {
+    "id": 38,
+    "messages": [
+      { "sender": "user", "text": "I'm going to rewrite the whole app in Rust." },
+      { "sender": "ai", "text": "We launch in exactly two weeks." },
+      { "sender": "user", "text": "But Rust is faster." },
+      { "sender": "ai", "text": "Oh, it'll be blazing fast when we miss our deadline by 6 months.", "isTarget": true },
+      { "sender": "ai", "text": "Stick to JavaScript for now." },
+      { "sender": "user", "text": "Fine." }
+    ],
+    "explanation": "Sarcastic agreement about speed is used to highlight the ridiculousness of a last-minute major rewrite."
+  },
+  {
+    "id": 39,
+    "messages": [
+      { "sender": "user", "text": "I didn't test the site on mobile." },
+      { "sender": "ai", "text": "Why would you? Only 80% of our traffic is mobile.", "isTarget": true },
+      { "sender": "user", "text": "I'll check it right now." }
+    ],
+    "explanation": "Asking \"why would you?\" followed by the fact that mobile is their primary traffic source is heavy sarcasm."
+  },
+  {
+    "id": 40,
+    "messages": [
+      { "sender": "ai", "text": "Did you update the API keys?" },
+      { "sender": "user", "text": "I hardcoded them into the frontend repository." },
+      { "sender": "ai", "text": "Brilliant. Let's just post them on Twitter while we're at it.", "isTarget": true },
+      { "sender": "ai", "text": "Please use environment variables immediately." }
+    ],
+    "explanation": "Suggesting they post secure keys on Twitter sarcastically exaggerates the user's massive security flaw."
   }
 ]

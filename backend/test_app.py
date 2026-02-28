@@ -6,7 +6,7 @@ from app import app, users_col
 @pytest.fixture(autouse=True)
 def clear_db():
     # drop users collection before each test
-    users_col.delete_many({})
+    # users_col.delete_many({})
     yield
 
 
@@ -135,6 +135,36 @@ def test_training_submit_records_results(monkeypatch):
     assert resp3.status_code == 400
     resp4 = client.post('/api/training/submit', json={'module': 'foo', 'results': 'notadict'}, headers={'Authorization': f'Bearer {token}'})
     assert resp4.status_code == 400
+
+
+def test_chat_evaluate(monkeypatch):
+    client = app.test_client()
+    # set up user and token
+    client.post('/api/users/signup', json={'username':'test','password':'pw','persona':'dev'})
+    login = client.post('/api/users/login', json={'username':'test','password':'pw'})
+    token = login.get_json()['token']
+
+    # mock the Gemini model call to return predictable JSON text
+    class DummyModel:
+        def generate_content(self, prompt):
+            class Resp: pass
+            resp = Resp()
+            resp.text = '{"passed": true, "score": 80, "xp": 50, "feedback": "nice", "ai_response": "hello"}'
+            return resp
+    monkeypatch.setattr('google.generativeai.GenerativeModel', lambda name: DummyModel())
+
+    resp = client.post('/api/chat/evaluate',
+                       headers={'Authorization': f'Bearer {token}'},
+                       json={'module':'icebreaker','user_message':'hi','context':''})
+    assert resp.status_code == 200
+    data = resp.get_json()
+    assert data['status']=='success'
+    assert data['passed'] is True
+    assert data['xp']==50
+    assert 'ai_response' in data
+    # ensure xp recorded in user doc
+    u = users_col.find_one({'username':'test'})
+    assert u['xp'] == 50
 
 
 def test_module6_page_renders():

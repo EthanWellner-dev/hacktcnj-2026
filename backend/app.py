@@ -15,9 +15,9 @@ except ImportError as e:
 
 # Gemini API
 try:
-    import google.generativeai as genai
+    import google.genai as genai
 except ImportError:
-    raise ImportError("google-generativeai is required: pip install google-generativeai")
+    raise ImportError("google-genai is required: pip install google-genai")
 
 from datetime import datetime, timedelta, timezone
 
@@ -46,15 +46,16 @@ def load_api_key():
     try:
         with open(secrets_path, 'r') as f:
             for line in f:
-                if line.startswith('Gemini-Api-Key:'):
-                    return line.split(':', 1)[1].strip()
+                if line.startswith('Gemini_Api_Key='):
+                    return line.split('=', 1)[1].strip()
     except Exception as e:
         print(f"Error loading Gemini API key: {e}")
     return None
 
 GEMINI_API_KEY = load_api_key()
+GEMINI_CLIENT = None
 if GEMINI_API_KEY:
-    genai.configure(api_key=GEMINI_API_KEY)
+    GEMINI_CLIENT = genai.Client(api_key=GEMINI_API_KEY)
 
 
 
@@ -255,7 +256,7 @@ def chat_evaluate():
     if not user:
         return jsonify({'status': 'error', 'message': 'user not found'}), 404
 
-    if not GEMINI_API_KEY:
+    if not GEMINI_CLIENT:
         return jsonify({'status': 'error', 'message': 'gemini api not configured'}), 500
 
     payload = request.get_json() or {}
@@ -268,52 +269,59 @@ def chat_evaluate():
 
     # Build module-specific prompt for Gemini
     prompts = {
-        'icebreaker': f"""You are evaluating a cold networking message. The user just met someone at a tech conference and received their business card.
+        'icebreaker': f"""You are a helpful evaluator. A user sent a cold networking text to Alex after meeting at a tech conference. The user message is: \\"{user_msg}\\".
 
-Context: The other person's name is Alex from the tech conference.
-User's message: "{user_msg}"
+In one JSON output (no extra prose) do the following:
+1. Analyze whether the message establishes rapport and shared context, sounds warm, and is not too brief.
+2. Propose what Alex might reply (ai_response) to keep the conversation going.
+3. Provide a numeric score 0-100 reflecting quality.
+4. Award XP: +50 for an excellent pitch, scale down for weaker messages; XP may be negative for aggressive/offensive replies.
+5. Give concise feedback string.
 
-Evaluate if this message:
-1. Establishes rapport and shared context
-2. Shows genuine interest without being pushy
-3. Is appropriate length (not too brief)
-
-Respond with ONLY valid JSON (no markdown, no extra text):
-{{"passed": true or false, "score": 0-100, "xp": 0-100, "feedback": "string", "ai_response": "what Alex might reply"}}""",
+Return exactly:
+{{"passed": true/false, "score": number, "xp": number, "feedback": "string", "ai_response": "text"}}
+""",
         
-        'hint': f"""You are evaluating if the user picked up on a social cue to end a conversation gracefully.
+        'hint': f"""You are a helpful evaluator monitoring a conversation. Jordan just gave a departure hint: 'Yeah for sure... Anyway, wow look at the time, I have an early morning tomorrow.'
+User replied: \\"{user_msg}\\".
 
-Context: You (the AI character Jordan) just hinted that you want to leave by saying: 'Yeah for sure... Anyway, wow look at the time, I have an early morning tomorrow.'
-User's response: "{user_msg}"
+In one JSON response describe:
+1. Whether the user recognized the hint and offered a polite exit rather than extending the chat.
+2. Give a score 0-100 reflecting how gracefully they handled it.
+3. Award XP (positive if they exit well, negative for ignoring/aggression).
+4. Provide feedback string. No ai_response needed.
 
-Evaluate if the user:
-1. Recognized the hint to leave
-2. Provided a graceful, polite exit
-3. Did not try to extend the conversation
-
-Respond with ONLY valid JSON (no markdown, no extra text):
-{{"passed": true or false, "score": 0-100, "xp": 0-100, "feedback": "string"}}""",
+Return exactly:
+{{"passed": true/false, "score": number, "xp": number, "feedback": "string"}}
+""",
         
-        'pingpong': f"""You are evaluating conversational momentum. The initial prompt was: 'So what do you usually do for fun on the weekends?'
+        'pingpong': f"""You are a helpful evaluator tracking momentum. The opening prompt was: 'So what do you usually do for fun on the weekends?'
 
-Context: {context}
-User's latest response: "{user_msg}"
+Conversation context:
+{context}
+User's latest reply: \\"{user_msg}\\".
 
-Evaluate if the user:
-1. Asked open-ended questions (not yes/no)
-2. Provided substantive replies (not one-word)
-3. Kept the conversation flowing
+In one JSON output:
+1. Judge whether the reply keeps momentum by asking open-ended questions and giving substantial content.
+2. Provide what the AI partner might say next to continue the chat (ai_response).
+3. Assign a score (0-100).
+4. Award XP (positive for flow, negative for abrupt/closed answers).
+5. Feedback string.
 
-Respond with ONLY valid JSON (no markdown, no extra text):
-{{"passed": true or false, "score": 0-100, "xp": 0-100, "feedback": "string", "ai_response": "next thing to say to keep conversation going"}}"""
+Return exactly:
+{{"passed": true/false, "score": number, "xp": number, "feedback": "string", "ai_response": "text"}}
+"""
     }
 
     if module not in prompts:
         return jsonify({'status': 'error', 'message': 'invalid module'}), 400
 
     try:
-        model = genai.GenerativeModel('gemini-pro')
-        response = model.generate_content(prompts[module])
+        # use flash-lite model per API error
+        response = GEMINI_CLIENT.models.generate_content(
+            model='gemini-2.5-flash-lite',
+            contents=prompts[module]
+        )
         
         # Parse response
         response_text = response.text.strip()

@@ -42,7 +42,7 @@
         <!-- LEFT: Chat Messages -->
         <div class="lg:col-span-2 glass-panel rounded-xl p-6 flex flex-col">
             <h3 class="text-sm font-mono text-slate-400 mb-4 uppercase tracking-wider">Project Team Alpha</h3>
-            <div id="messages-container" class="space-y-3 flex-1 overflow-y-auto mb-4">
+            <div id="messages-container" class="space-y-3 flex-1 overflow-y-auto mb-4 p-4">
                 <!-- Messages will be rendered here -->
             </div>
         </div>
@@ -86,14 +86,33 @@
     .message-bubble {
         cursor: pointer;
         transition: all 0.2s ease;
+        padding: 10px 14px;
+        border-radius: 20px;
+        position: relative;
+        max-width: 80%;
+        word-wrap: break-word;
+    }
+    
+    /* outgoing (user) vs incoming (ai) colors set dynamically in JS */
+    .message-bubble.user {
+        background: linear-gradient(135deg, #06b6d4 0%, #3b82f6 100%);
+        color: white;
+        margin-left: auto;
+        border-bottom-right-radius: 4px;
+    }
+    .message-bubble.ai {
+        background: #1f2937;
+        color: #e5e7eb;
+        margin-right: auto;
+        border-bottom-left-radius: 4px;
     }
     
     .message-bubble:hover {
-        transform: translateX(4px);
+        transform: translateX(2px);
     }
     
     .message-selected {
-        ring: 2px solid rgb(6, 182, 212);
+        outline: 2px solid rgb(6, 182, 212);
     }
 </style>
 
@@ -138,15 +157,17 @@
         
         currentPrompt.messages.forEach((msg, idx) => {
             const bubble = document.createElement('div');
-            bubble.className = 'message-bubble p-4 rounded-lg transition-all';
-            bubble.innerHTML = `<span class="text-slate-400 text-xs font-mono mr-2">${msg.sender.toUpperCase()}</span><span class="text-slate-200">${msg.text}</span>`;
+            bubble.className = 'message-bubble';
+            bubble.innerHTML = msg.text;
             
             if (msg.sender === 'ai') {
-                bubble.classList.add('bg-slate-800/60', 'border', 'border-white/10', 'cursor-pointer', 'hover:border-cyan-500/50');
+                bubble.classList.add('ai');
+                // only AI bubbles are selectable
+                bubble.classList.add('cursor-pointer');
                 bubble.dataset.id = idx;
                 bubble.onclick = () => selectMessage(idx);
             } else {
-                bubble.classList.add('bg-slate-700/40', 'ml-8');
+                bubble.classList.add('user');
             }
             
             container.appendChild(bubble);
@@ -180,6 +201,18 @@
         const container = document.getElementById('feedback-container');
         const xp = isCorrect ? 50 : -10;
         totalXpEarned += Math.max(0, xp);
+        
+        // highlight bubbles: selected red/green and correct one green
+        document.querySelectorAll('.message-bubble').forEach((el, idx) => {
+            el.classList.remove('bg-red-600','bg-green-600');
+            if (idx === selectedMessageId) {
+                el.classList.add(isCorrect ? 'bg-green-600' : 'bg-red-600');
+            }
+            const msg = currentPrompt.messages[idx];
+            if (!isCorrect && msg.isTarget) {
+                el.classList.add('bg-green-600');
+            }
+        });
         
         if (isCorrect) {
             container.innerHTML = `
