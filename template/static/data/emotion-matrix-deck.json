@@ -5,7 +5,7 @@
   "cards": [
     {
       "id": "card_01",
-      "imageSrc": "/static/images/faces/smile_narrow_eyes.jpg",
+      "imageSrc": "/static/images/faces/smile_narrow_eyes.png",
       "audioSrc": "/static/audio/elevenlabs/001_passive_aggressive.mp3",
       "transcriptHint": "Wow, that's so great for you.",
       "options": [
@@ -19,7 +19,7 @@
     },
     {
       "id": "card_02",
-      "imageSrc": "/static/images/faces/wide_eyes_looking_away.jpg",
+      "imageSrc": "/static/images/faces/wide_eyes_looking_away.png",
       "audioSrc": "/static/audio/elevenlabs/002_anxious.mp3",
       "transcriptHint": "No no, everything is totally fine!",
       "options": [
@@ -33,7 +33,7 @@
     },
     {
       "id": "card_03",
-      "imageSrc": "/static/images/faces/flat_expression.jpg",
+      "imageSrc": "/static/images/faces/flat_expression.png",
       "audioSrc": "/static/audio/elevenlabs/003_sarcasm.mp3",
       "transcriptHint": "I'm absolutely thrilled.",
       "options": [
@@ -47,7 +47,7 @@
     },
     {
       "id": "card_04",
-      "imageSrc": "/static/images/faces/furrowed_brow_open_mouth.jpg",
+      "imageSrc": "/static/images/faces/furrowed_brow_open_mouth.png",
       "audioSrc": "/static/audio/elevenlabs/004_confused.mp3",
       "transcriptHint": "Wait, what did you just say?",
       "options": [
@@ -61,7 +61,7 @@
     },
     {
       "id": "card_05",
-      "imageSrc": "/static/images/faces/tight_lips_clenched_jaw.jpg",
+      "imageSrc": "/static/images/faces/tight_lips_clenched_jaw.png",
       "audioSrc": "/static/audio/elevenlabs/005_angry.mp3",
       "transcriptHint": "That's... just great. Really.",
       "options": [
@@ -75,7 +75,7 @@
     },
     {
       "id": "card_06",
-      "imageSrc": "/static/images/faces/drooping_eyes_downturned_mouth.jpg",
+      "imageSrc": "/static/images/faces/drooping_eyes_downturned_mouth.png",
       "audioSrc": "/static/audio/elevenlabs/006_sad.mp3",
       "transcriptHint": "Yeah, I guess that's fine...",
       "options": [
@@ -89,7 +89,7 @@
     },
     {
       "id": "card_07",
-      "imageSrc": "/static/images/faces/raised_eyebrows_wide_eyes.jpg",
+      "imageSrc": "/static/images/faces/raised_eyebrows_wide_eyes.png",
       "audioSrc": "/static/audio/elevenlabs/007_surprised.mp3",
       "transcriptHint": "Oh! I didn't expect that at all!",
       "options": [
@@ -103,7 +103,7 @@
     },
     {
       "id": "card_08",
-      "imageSrc": "/static/images/faces/one_eyebrow_raised_smirk.jpg",
+      "imageSrc": "/static/images/faces/one_eyebrow_raised_smirk.png",
       "audioSrc": "/static/audio/elevenlabs/008_skeptical.mp3",
       "transcriptHint": "Sure, that makes total sense.",
       "options": [
@@ -117,7 +117,7 @@
     },
     {
       "id": "card_09",
-      "imageSrc": "/static/images/faces/tension_around_eyes.jpg",
+      "imageSrc": "/static/images/faces/tension_around_eyes.png",
       "audioSrc": "/static/audio/elevenlabs/009_strained.mp3",
       "transcriptHint": "I'm fine. Everything is fine.",
       "options": [
@@ -131,7 +131,7 @@
     },
     {
       "id": "card_10",
-      "imageSrc": "/static/images/faces/genuine_smile_crinkled_eyes.jpg",
+      "imageSrc": "/static/images/faces/genuine_smile_crinkled_eyes.png",
       "audioSrc": "/static/audio/elevenlabs/010_genuinely_happy.mp3",
       "transcriptHint": "That's wonderful news!",
       "options": [
