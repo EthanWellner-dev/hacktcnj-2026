@@ -1,8 +1,8 @@
-🏆 The Social Sandbox: Judges' Brief
+🏆 Bridge Communications Co: Judges' Brief
 
 🎯 The Core Concept
 
-Social Sandbox is a "flight simulator for human interaction." It is an integrated training suite that helps users master the nuances of communication—from decoding passive-aggressive texts to maintaining facial composure under pressure—all within a private, AI-powered environment.
+Bridge Communications is a "flight simulator for human interaction." It is an integrated training suite that helps users master the nuances of communication—from decoding passive-aggressive texts to maintaining facial composure under pressure—all within a private, AI-powered environment.
 
 🛠️ The Technical "Flex" (What to highlight)
 
@@ -30,7 +30,7 @@ We’ve implemented a persistent Humanity Score (XP) system. Every micro-interac
 
 🌍 Real-World Impact
 
-For many, especially neurodivergent individuals or those with social anxiety, the "first time" having a difficult conversation shouldn't be in a high-stakes real-world scenario. Social Sandbox provides a safe space to "debug" social cues, allowing users to build muscle memory and confidence before they ever step into a real-world interview or networking event.
+For many, especially neurodivergent individuals or those with social anxiety, the "first time" having a difficult conversation shouldn't be in a high-stakes real-world scenario.  provides a safe space to "debug" social cues, allowing users to build muscle memory and confidence before they ever step into a real-world interview or networking event.
 
 💡 Pitch "Power Phrases" for Judging
 

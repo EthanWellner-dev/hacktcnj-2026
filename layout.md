@@ -1,4 +1,4 @@
-🎨 Social Sandbox: Frontend UI & Module Blueprint
+🎨 Bridge Communications Co: Frontend UI & Module Blueprint
 
 This document is the ultimate guide for Teammate 2 (Frontend/Systems). It details every HTML page, the layout, and exactly how the user interacts with each of the training modules.
 
