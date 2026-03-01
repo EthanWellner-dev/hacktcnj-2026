@@ -32,8 +32,5 @@ app.register_blueprint(module6_bp)
 app.register_blueprint(module7_bp)
 app.register_blueprint(module8_bp)
 
-
-
 if __name__ == '__main__':
     app.run(debug=True)
-

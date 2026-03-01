@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Poker Face | Social Sandbox</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- 1. MediaPipe libraries (ensure these load before logic) -->
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/face_mesh.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js" crossorigin="anonymous"></script>
+    <!-- Fallback unpkg CDN -->
+    <script>
+        if (!window.vision) {
+            console.log("jsDelivr failed, loading from unpkg fallback");
+            var script = document.createElement('script');
+            script.src = 'https://unpkg.com/@mediapipe/tasks-vision@0.10.5/vision_bundle.js';
+            script.onerror = function() {
+                console.error('Both CDN sources failed to load MediaPipe');
+            };
+            document.head.appendChild(script);
+        }
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=JetBrains+Mono:wght@400;700&display=swap');
+        
+        body { font-family: 'Inter', sans-serif; }
+        .font-mono { font-family: 'JetBrains Mono', monospace; }
+        
+        .glass-panel {
+            background: rgba(15, 23, 42, 0.7);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .video-container {
+            position: relative;
+            overflow: hidden;
+            border-radius: 1rem;
+        }
+
+        .video-container video {
+            transform: scaleX(-1); /* Mirror only the video feed */
+        }
+
+        .failure-shake {
+            animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both;
+        }
+
+        @keyframes shake {
+            10%, 90% { transform: translate3d(-1px, 0, 0); }
+            20%, 80% { transform: translate3d(2px, 0, 0); }
+            30%, 50%, 70% { transform: translate3d(-4px, 0, 0); }
+            40%, 60% { transform: translate3d(4px, 0, 0); }
+        }
+    </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col overflow-x-hidden selection:bg-indigo-500/30">
+
+    <!-- Top Navigation -->
+    <nav class="w-full border-b border-white/10 bg-slate-900/50 backdrop-blur-md px-6 py-4 flex justify-between items-center z-50">
+        <div class="flex items-center gap-3">
+            <div class="w-8 h-8 rounded bg-gradient-to-br from-indigo-400 to-purple-600 flex items-center justify-center shadow-[0_0_10px_rgba(129,140,248,0.5)]">
+                <i class="fa-solid fa-mask text-white text-sm"></i>
+            </div>
+            <h1 class="font-bold tracking-wider text-sm uppercase text-slate-300">Social Sandbox <span class="text-indigo-400 font-mono text-xs ml-2">v0.1.2-MVP</span></h1>
+        </div>
+        <div class="flex items-center gap-6">
+            <div class="font-mono text-sm">
+                <span class="text-slate-400">XP:</span> <span id="user-xp" class="text-emerald-400 font-bold">1,300</span>
+            </div>
+            <button class="text-slate-400 hover:text-white text-sm transition-colors border border-white/10 rounded px-3 py-1 bg-slate-800/50">
+                <i class="fa-solid fa-arrow-left mr-2"></i>Lounge
+            </button>
+        </div>
+    </nav>
+
+    <main class="flex-1 flex flex-col items-center p-6 lg:p-12 relative">
+        
+        <!-- Scenario Header -->
+        <div id="scenario-card" class="glass-panel rounded-2xl p-6 max-w-3xl w-full mb-8 text-center relative z-10 transition-all duration-500">
+            <div class="absolute -top-3 left-1/2 -translate-x-1/2 bg-indigo-900 text-indigo-300 px-4 py-1 rounded-full text-[10px] font-mono border border-indigo-500/50 tracking-widest uppercase">
+                MODULE 8: SITUATIONAL FACIAL CONTROL
+            </div>
+            <h2 id="scenario-title" class="text-2xl font-extrabold mb-3 bg-clip-text text-transparent bg-gradient-to-r from-white to-slate-400">The Poker Face</h2>
+            <p id="scenario-desc" class="text-slate-400 text-sm leading-relaxed max-w-xl mx-auto">
+                Maintain a <span class="text-white font-bold" id="target-expression">Neutral/Attentive</span> gaze. Do not let your face drop or react emotionally to the trigger.
+            </p>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 w-full max-w-6xl z-10">
+            
+            <!-- Left: Stats -->
+            <div class="flex flex-col gap-4 order-2 lg:order-1">
+                <div class="glass-panel rounded-xl p-5">
+                    <h3 class="text-xs font-mono text-indigo-400 uppercase tracking-widest mb-4">Calibration Data</h3>
+                    <div class="space-y-4">
+                        <div>
+                            <div class="flex justify-between text-[10px] mb-1">
+                                <span class="text-slate-500">SMILE INTENSITY</span>
+                                <span id="val-smile" class="text-white">0%</span>
+                            </div>
+                            <div class="w-full bg-slate-800 h-1.5 rounded-full overflow-hidden">
+                                <div id="bar-smile" class="bg-indigo-500 h-full transition-all duration-200" style="width: 0%"></div>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="flex justify-between text-[10px] mb-1">
+                                <span class="text-slate-500">BROW FURROW (ANNOYANCE)</span>
+                                <span id="val-brow" class="text-white">0%</span>
+                            </div>
+                            <div class="w-full bg-slate-800 h-1.5 rounded-full overflow-hidden">
+                                <div id="bar-brow" class="bg-purple-500 h-full transition-all duration-200" style="width: 0%"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="glass-panel rounded-xl p-5 border-l-4 border-indigo-500">
+                    <h3 class="text-xs font-mono text-white uppercase tracking-widest mb-2">Instructions</h3>
+                    <ul class="text-[11px] text-slate-400 space-y-2 list-disc ml-4">
+                        <li>Center your face in the camera frame.</li>
+                        <li>Click "Start Focus" to begin.</li>
+                        <li>Hold the pose for 3 continuous seconds.</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Center: Video Feed -->
+            <div class="lg:col-span-2 flex flex-col items-center order-1 lg:order-2">
+                <div id="video-wrapper" class="video-container glass-panel aspect-video w-full max-w-2xl border-2 border-slate-800">
+                    <video id="webcam" class="w-full h-full object-cover" autoplay playsinline></video>
+                    
+                    <!-- Overlay Message -->
+                    <div id="status-overlay" class="absolute inset-0 flex items-center justify-center bg-slate-950/80 z-20 transition-opacity duration-500">
+                        <div class="text-center">
+                            <i id="status-icon" class="fa-solid fa-camera text-4xl text-indigo-500 mb-4 animate-pulse"></i>
+                            <p id="status-text" class="font-mono text-sm text-slate-300">Initializing Vision Engine...</p>
+                        </div>
+                    </div>
+
+                    <!-- Countdown Bar -->
+                    <div class="absolute bottom-0 left-0 w-full h-2 bg-slate-900/50">
+                        <div id="timer-bar" class="h-full bg-indigo-500 shadow-[0_0_15px_rgba(99,102,241,0.8)] w-0"></div>
+                    </div>
+                </div>
+
+                <div class="mt-8 flex gap-4 w-full justify-center">
+                    <button id="start-btn" disabled class="bg-indigo-600 hover:bg-indigo-500 disabled:bg-slate-800 disabled:text-slate-600 px-8 py-3 rounded-full font-bold transition-all flex items-center gap-3 shadow-lg shadow-indigo-500/20 active:scale-95">
+                        <i class="fa-solid fa-eye"></i> Start Focus
+                    </button>
+                    <button id="next-btn" class="bg-slate-800 hover:bg-slate-700 px-6 py-3 rounded-full font-bold transition-all border border-white/5">
+                        Next Scenario
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Feedback Panel -->
+        <div id="feedback-panel" class="w-full max-w-3xl mt-12 glass-panel border-indigo-500/30 rounded-xl p-6 hidden">
+            <div class="flex items-center gap-3 mb-4">
+                <div class="w-10 h-10 rounded-full bg-indigo-500/20 flex items-center justify-center">
+                    <i class="fa-solid fa-brain text-indigo-400"></i>
+                </div>
+                <div>
+                    <h3 class="font-bold text-white">Expression Audit Complete</h3>
+                    <p class="text-xs text-slate-500 font-mono">Vision Model: Google MediaPipe FaceMesh</p>
+                </div>
+            </div>
+            <p id="feedback-text" class="text-sm text-slate-300 leading-relaxed italic"></p>
+        </div>
+
+        <!-- Background Glow -->
+        <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-indigo-600/5 rounded-full blur-[120px] pointer-events-none z-0"></div>
+    </main>
+
+    <script src="/static/js/module8.js"></script>
+</body>
+</html>
