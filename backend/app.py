@@ -28,8 +28,5 @@ app.register_blueprint(chat_bp)
 app.register_blueprint(module5_bp)
 app.register_blueprint(module6_bp)
 
-
-
 if __name__ == '__main__':
     app.run(debug=True)
-

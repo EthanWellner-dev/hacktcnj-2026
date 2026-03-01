@@ -6,8 +6,21 @@
     <title>The Poker Face | Social Sandbox</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- MediaPipe Face Mesh libraries -->
-    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.3/vision_bundle.js"></script>
+    <!-- 1. MediaPipe libraries (ensure these load before logic) -->
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/face_mesh.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js" crossorigin="anonymous"></script>
+    <!-- Fallback unpkg CDN -->
+    <script>
+        if (!window.vision) {
+            console.log("jsDelivr failed, loading from unpkg fallback");
+            var script = document.createElement('script');
+            script.src = 'https://unpkg.com/@mediapipe/tasks-vision@0.10.5/vision_bundle.js';
+            script.onerror = function() {
+                console.error('Both CDN sources failed to load MediaPipe');
+            };
+            document.head.appendChild(script);
+        }
+    </script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=JetBrains+Mono:wght@400;700&display=swap');
         
@@ -22,9 +35,12 @@
 
         .video-container {
             position: relative;
-            transform: scaleX(-1); /* Mirror effect */
             overflow: hidden;
             border-radius: 1rem;
+        }
+
+        .video-container video {
+            transform: scaleX(-1); /* Mirror only the video feed */
         }
 
         .failure-shake {
@@ -157,6 +173,7 @@
         <!-- Background Glow -->
         <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-indigo-600/5 rounded-full blur-[120px] pointer-events-none z-0"></div>
     </main>
-</body>
 
-<script src="/static/js/module8.js"></script>
+    <script src="/static/js/module8.js"></script>
+</body>
+</html>
