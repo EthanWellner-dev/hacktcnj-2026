@@ -103,7 +103,7 @@ function startRecording() {
     recordBtn.classList.add('recording-active');
     recordBtn.classList.replace('border-slate-700', 'border-cyan-500');
     recordIcon.classList.replace('text-slate-400', 'text-cyan-400');
-    recordText.innerText = 'Recording...';
+    recordText.innerText = 'Click to Stop';
     recordText.classList.replace('text-slate-400', 'text-cyan-400');
     
     // Timer
@@ -124,14 +124,22 @@ function startRecording() {
 
 function stopRecording() {
     if (mediaRecorder && isRecording) {
+        isRecording = false;
         mediaRecorder.stop();
+        recordBtn.classList.remove('recording-active');
+        recordBtn.classList.replace('border-cyan-500', 'border-slate-700');
+        recordIcon.classList.replace('text-cyan-400', 'text-slate-400');
+        recordText.innerText = 'Click to Record';
+        recordText.classList.replace('text-cyan-400', 'text-slate-400');
+        clearInterval(recordingTimer);
+        timerDisplay.classList.add('opacity-0');
     }
 }
 
 async function startScenario() {
     if (scenarioInitialized) return;
     
-    const token = localStorage.getItem('auth_token');
+    const token = localStorage.getItem('ss_token');
     if (!token) {
         console.error('Not authenticated');
         bossMessage.innerText = 'Error: Not authenticated';
@@ -170,6 +178,7 @@ async function startScenario() {
                 bossAudio.src = data.audio_url;
                 bossAudio.classList.remove('hidden');
                 bossAudio.style.display = 'block';
+                document.getElementById('boss-waveform').classList.remove('hidden');
                 
                 // Auto-play
                 try {
@@ -194,7 +203,7 @@ async function startScenario() {
 }
 
 async function submitAudioResponse() {
-    const token = localStorage.getItem('auth_token');
+    const token = localStorage.getItem('ss_token');
     if (!token) {
         console.error('Not authenticated');
         return;
@@ -287,12 +296,57 @@ function displayAnalysis(data) {
 }
 
 // Event Listeners
-recordBtn.addEventListener('mousedown', startRecording);
-recordBtn.addEventListener('mouseup', stopRecording);
-recordBtn.addEventListener('touchstart', startRecording);
-recordBtn.addEventListener('touchend', stopRecording);
+recordBtn.addEventListener('click', () => {
+    if (isRecording) {
+        stopRecording();
+    } else {
+        startRecording();
+    }
+});
 
 startScenarioBtn.addEventListener('click', startScenario);
+
+// Audio Reset Handlers
+const resetBossAudioBtn = document.getElementById('reset-boss-audio-btn');
+const resetResponseAudioBtn = document.getElementById('reset-response-audio-btn');
+
+if (resetBossAudioBtn) {
+    resetBossAudioBtn.addEventListener('click', () => {
+        bossAudio.currentTime = 0;
+        bossAudio.play();
+    });
+    
+    bossAudio.addEventListener('play', () => {
+        resetBossAudioBtn.classList.add('hidden');
+    });
+    
+    bossAudio.addEventListener('pause', () => {
+        resetBossAudioBtn.classList.remove('hidden');
+    });
+    
+    bossAudio.addEventListener('ended', () => {
+        resetBossAudioBtn.classList.remove('hidden');
+    });
+}
+
+if (resetResponseAudioBtn) {
+    resetResponseAudioBtn.addEventListener('click', () => {
+        responseAudio.currentTime = 0;
+        responseAudio.play();
+    });
+    
+    responseAudio.addEventListener('play', () => {
+        resetResponseAudioBtn.classList.add('hidden');
+    });
+    
+    responseAudio.addEventListener('pause', () => {
+        resetResponseAudioBtn.classList.remove('hidden');
+    });
+    
+    responseAudio.addEventListener('ended', () => {
+        resetResponseAudioBtn.classList.remove('hidden');
+    });
+}
 
 // Initialize on page load
 document.addEventListener('DOMContentLoaded', initModule);
