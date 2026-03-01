@@ -18,6 +18,8 @@ from training import training_bp
 from chat import chat_bp
 from module5 import module5_bp
 from module6 import module6_bp
+from module7 import module7_bp
+from module8 import module8_bp
 
 # Register blueprints
 app.register_blueprint(auth_bp)
@@ -27,6 +29,8 @@ app.register_blueprint(training_bp)
 app.register_blueprint(chat_bp)
 app.register_blueprint(module5_bp)
 app.register_blueprint(module6_bp)
+app.register_blueprint(module7_bp)
+app.register_blueprint(module8_bp)
 
 
 

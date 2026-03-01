@@ -55,6 +55,11 @@ def module6_page():
     return render_template('module6.html')
 
 
+@views_bp.route('/module7')
+def module7_page():
+    return render_template('module7.html')
+
+
 @views_bp.route('/module8')
 def module8_page():
     return render_template('module8.html')

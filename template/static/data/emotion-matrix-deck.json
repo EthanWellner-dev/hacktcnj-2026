@@ -1,0 +1,155 @@
+{
+  "name": "The Emotion Matrix Deck",
+  "version": "1.0",
+  "description": "A collection of multimodal emotion detection flashcards combining facial expressions and ElevenLabs audio cues.",
+  "cards": [
+    {
+      "id": "card_01",
+      "imageSrc": "/static/images/faces/smile_narrow_eyes.jpg",
+      "audioSrc": "/static/audio/elevenlabs/001_passive_aggressive.mp3",
+      "transcriptHint": "Wow, that's so great for you.",
+      "options": [
+        "Genuinely Happy",
+        "Passive-Aggressive",
+        "Confused",
+        "Exhausted"
+      ],
+      "correctAnswerIndex": 1,
+      "feedbackText": "The visual smile conflicted with narrowed eyes and a strained vocal tone, indicating hidden hostility and passive-aggressive sentiment."
+    },
+    {
+      "id": "card_02",
+      "imageSrc": "/static/images/faces/wide_eyes_looking_away.jpg",
+      "audioSrc": "/static/audio/elevenlabs/002_anxious.mp3",
+      "transcriptHint": "No no, everything is totally fine!",
+      "options": [
+        "Excited",
+        "Angry",
+        "Anxious/Lying",
+        "Bored"
+      ],
+      "correctAnswerIndex": 2,
+      "feedbackText": "The averted gaze combined with rapid, high-pitched speech is a classic sign of anxiety and potential dishonesty."
+    },
+    {
+      "id": "card_03",
+      "imageSrc": "/static/images/faces/flat_expression.jpg",
+      "audioSrc": "/static/audio/elevenlabs/003_sarcasm.mp3",
+      "transcriptHint": "I'm absolutely thrilled.",
+      "options": [
+        "Excited",
+        "Genuinely Happy",
+        "Sarcastic/Bored",
+        "Angry"
+      ],
+      "correctAnswerIndex": 2,
+      "feedbackText": "A flat, lifeless facial expression paired with monotone delivery strongly indicates sarcasm or disinterest."
+    },
+    {
+      "id": "card_04",
+      "imageSrc": "/static/images/faces/furrowed_brow_open_mouth.jpg",
+      "audioSrc": "/static/audio/elevenlabs/004_confused.mp3",
+      "transcriptHint": "Wait, what did you just say?",
+      "options": [
+        "Confident",
+        "Confused",
+        "Amused",
+        "Determined"
+      ],
+      "correctAnswerIndex": 1,
+      "feedbackText": "The furrowed brow and open mouth, combined with hesitant speech tone, clearly convey confusion and uncertainty."
+    },
+    {
+      "id": "card_05",
+      "imageSrc": "/static/images/faces/tight_lips_clenched_jaw.jpg",
+      "audioSrc": "/static/audio/elevenlabs/005_angry.mp3",
+      "transcriptHint": "That's... just great. Really.",
+      "options": [
+        "Joyful",
+        "Disappointed",
+        "Angry/Frustrated",
+        "Sad"
+      ],
+      "correctAnswerIndex": 2,
+      "feedbackText": "Tightened jaw muscles and pursed lips indicate suppressed anger or frustration, especially when paired with a strained vocal tone."
+    },
+    {
+      "id": "card_06",
+      "imageSrc": "/static/images/faces/drooping_eyes_downturned_mouth.jpg",
+      "audioSrc": "/static/audio/elevenlabs/006_sad.mp3",
+      "transcriptHint": "Yeah, I guess that's fine...",
+      "options": [
+        "Content",
+        "Happy",
+        "Sad/Resigned",
+        "Indifferent"
+      ],
+      "correctAnswerIndex": 2,
+      "feedbackText": "Drooping eyelids and a downturned mouth with a quiet, defeated vocal tone are unmistakable signs of sadness or resignation."
+    },
+    {
+      "id": "card_07",
+      "imageSrc": "/static/images/faces/raised_eyebrows_wide_eyes.jpg",
+      "audioSrc": "/static/audio/elevenlabs/007_surprised.mp3",
+      "transcriptHint": "Oh! I didn't expect that at all!",
+      "options": [
+        "Calm",
+        "Skeptical",
+        "Surprised",
+        "Bored"
+      ],
+      "correctAnswerIndex": 2,
+      "feedbackText": "Raised eyebrows and wide-open eyes with elevated vocal pitch perfectly capture genuine surprise and excitement."
+    },
+    {
+      "id": "card_08",
+      "imageSrc": "/static/images/faces/one_eyebrow_raised_smirk.jpg",
+      "audioSrc": "/static/audio/elevenlabs/008_skeptical.mp3",
+      "transcriptHint": "Sure, that makes total sense.",
+      "options": [
+        "Trusting",
+        "Happy",
+        "Skeptical/Doubtful",
+        "Sympathetic"
+      ],
+      "correctAnswerIndex": 2,
+      "feedbackText": "A raised eyebrow and smirk combined with sarcastic intonation signal skepticism and disbelief."
+    },
+    {
+      "id": "card_09",
+      "imageSrc": "/static/images/faces/tension_around_eyes.jpg",
+      "audioSrc": "/static/audio/elevenlabs/009_strained.mp3",
+      "transcriptHint": "I'm fine. Everything is fine.",
+      "options": [
+        "Relaxed",
+        "Peaceful",
+        "Strained/Stressed",
+        "Calm"
+      ],
+      "correctAnswerIndex": 2,
+      "feedbackText": "Tension around the eyes (crow's feet) combined with measured, controlled speech indicates internal stress being suppressed."
+    },
+    {
+      "id": "card_10",
+      "imageSrc": "/static/images/faces/genuine_smile_crinkled_eyes.jpg",
+      "audioSrc": "/static/audio/elevenlabs/010_genuinely_happy.mp3",
+      "transcriptHint": "That's wonderful news!",
+      "options": [
+        "Disappointed",
+        "Fearful",
+        "Genuinely Happy",
+        "Contemptuous"
+      ],
+      "correctAnswerIndex": 2,
+      "feedbackText": "A genuine Duchenne smile with crinkled eyes and natural vocal warmth is the hallmark of authentic happiness."
+    }
+  ],
+  "gameConfig": {
+    "cardsPerSession": 10,
+    "maxDuration": 60,
+    "correctAnswerXP": 50,
+    "incorrectAnswerXPPenalty": 10,
+    "feedbackDisplayTime": 1500,
+    "cardLoadDelay": 500
+  }
+}
