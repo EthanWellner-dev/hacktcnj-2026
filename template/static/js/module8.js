@@ -20,7 +20,7 @@ const scenarios = [
 ];
 
 let currentScenarioIdx = 0;
-let faceMesh;
+let faceLandmarker;
 let video, startBtn, nextBtn, timerBar, statusOverlay, statusText, videoWrapper, feedbackPanel, feedbackText;
 let isChallenging = false;
 let challengeStartTime = 0;
@@ -39,7 +39,7 @@ function updateScenarioUI() {
     if (startBtn) {
         startBtn.innerHTML = `<i class="fa-solid fa-eye"></i> Start Focus`;
         startBtn.className = "bg-indigo-600 hover:bg-indigo-500 disabled:bg-slate-800 disabled:text-slate-600 px-8 py-3 rounded-full font-bold transition-all flex items-center gap-3 shadow-lg shadow-indigo-500/20 active:scale-95";
-        startBtn.disabled = !faceMesh;
+        startBtn.disabled = !faceLandmarker;
     }
     if (feedbackPanel) feedbackPanel.classList.add('hidden');
     if (timerBar) timerBar.style.width = "0%";
@@ -61,33 +61,32 @@ async function init() {
     try {
         updateScenarioUI();
 
-        let mpFaceMesh = null;
+        let visionLib = null;
         for (let i = 0; i < 50; i++) {
-            if (window.FaceMesh) {
-                mpFaceMesh = window.FaceMesh;
+            if (window.vision && window.vision.FaceLandmarker) {
+                visionLib = window.vision;
                 break;
             }
             await new Promise(r => setTimeout(r, 200));
         }
 
-        if (!mpFaceMesh) {
+        if (!visionLib) {
             throw new Error("MediaPipe libraries failed to load.");
         }
 
-        faceMesh = new mpFaceMesh({
-            locateFile: (file) => {
-                return `https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/${file}`;
-            }
-        });
-
-        faceMesh.setOptions({
-            maxNumFaces: 1,
-            refineLandmarks: true,
-            minDetectionConfidence: 0.5,
+        // Create FaceLandmarker with options
+        const filesetResolver = await visionLib.FilesetResolver.forVisionTasks(
+            "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.3/wasm"
+        );
+        
+        faceLandmarker = await visionLib.FaceLandmarker.createFromOptions(filesetResolver, {
+            baseOptions: {},
+            numFaces: 1,
+            runningMode: 'VIDEO',
+            minFaceDetectionConfidence: 0.5,
+            minFacePresenceConfidence: 0.5,
             minTrackingConfidence: 0.5
         });
-
-        faceMesh.onResults(onResults);
         
         setupWebcam();
         
@@ -131,16 +130,17 @@ function setupWebcam() {
 }
 
 async function processVideo() {
-    if (faceMesh && video.readyState >= 2) {
-        await faceMesh.send({image: video});
+    if (faceLandmarker && video.readyState >= 2) {
+        const results = faceLandmarker.detectForVideo(video, Date.now());
+        onResults(results);
     }
     requestAnimationFrame(processVideo);
 }
 
 function onResults(results) {
-    if (!results.multiFaceLandmarks || results.multiFaceLandmarks.length === 0) return;
+    if (!results.faceLandmarks || results.faceLandmarks.length === 0) return;
     
-    const landmarks = results.multiFaceLandmarks[0];
+    const landmarks = results.faceLandmarks[0];
     
     // Reference: Eye width for scaling
     const eyeWidth = Math.sqrt(Math.pow(landmarks[33].x - landmarks[133].x, 2)); 
