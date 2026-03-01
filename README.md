@@ -51,7 +51,7 @@ Core: HTML5, Vanilla JavaScript, Tailwind CSS (via CDN).
 
 State Management: Vue.js (via CDN) mounted specifically for the complex Chat UI.
 
-Client-Side ML: face-api.js (Webcam Emotion Tracking), Native Web Speech API (Speech-to-Text), Hark.js (Vocal pause tracking).
+Client-Side ML: **face-api.js** (Emotion Detection via TensorFlow.js), Native Web Speech API (Speech-to-Text), Hark.js (Vocal pause tracking).
 
 Backend & Data (The Bridge)
 
@@ -98,6 +98,15 @@ From `backend/` while the virtualenv is activated you can run:
 pytest test_app.py
 ```
 which will exercise signup/login/leaderboard against a temporary database state.
+
+### Model References
+
+**Module 8 – The Poker Face** uses **face-api.js** for emotion detection:
+- **Library**: [face-api.js](https://github.com/justadudewhohacks/face-api.js) (v0.22.2)
+- **Backend ML**: TensorFlow.js-based face recognition and expression detection
+- **Emotions Detected**: Neutral, Happy, Sad, Angry, Fearful, Disgusted, Surprised
+- **Advantages**: Lightweight, runs entirely in-browser (no server calls), no API keys required, privacy-first
+- **Citation**: Duda et al., "face-api.js: JavaScript library for face detection and recognition using the Labeled Face Parts in the Wild (LFPW) and WIDER FACE datasets"
 
 ---
 

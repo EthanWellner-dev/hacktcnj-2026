@@ -1,4 +1,4 @@
-const scenarios = [
+const scenarios =[
     { title: "The Monologue", desc: "A peer is explaining their complex hobby. Look 'Politely Interested'.", target: "Neutral" },
     { title: "The Critique", desc: "You just received unexpected feedback. Stay 'Unfazed'.", target: "Unfazed" },
     { title: "The Bad Joke", desc: "A teacher tells a joke that lands flat. Maintain a 'Steady Smile'.", target: "Steady Smile" },
@@ -20,22 +20,63 @@ const scenarios = [
 ];
 
 let currentScenarioIdx = 0;
-let faceMesh;
+let faceApiDetector;
 let video, startBtn, nextBtn, timerBar, statusOverlay, statusText, videoWrapper, feedbackPanel, feedbackText;
 let isChallenging = false;
 let challengeStartTime = 0;
 let passCount = 0;
-const CHALLENGE_DURATION = 3000; 
+const CHALLENGE_DURATION = 3000;
+let modelReady = false; 
 
-function startChallenge() {
-    isChallenging = true;
-    challengeStartTime = performance.now();
-    feedbackPanel.classList.add('hidden');
-    startBtn.innerText = "Focusing...";
-    startBtn.classList.replace('bg-indigo-600', 'bg-slate-700');
-} 
+function emotionToLabel(emotionScores) {
+    if (!emotionScores) return { label: "unknown", confidence: 0 };
+    
+    let maxEmotion = "neutral";
+    let maxValue = emotionScores.neutral || 0;
+    
+    Object.entries(emotionScores).forEach(([emotion, value]) => {
+        if (value > maxValue) {
+            maxValue = value;
+            maxEmotion = emotion;
+        }
+    });
+    
+    // Require minimum confidence to report (avoid noise)
+    const MIN_CONFIDENCE = 0.2;
+    if (maxValue < MIN_CONFIDENCE) {
+        return { label: "Neutral", confidence: 0, detected: "indeterminate" };
+    }
+    
+    // Map to our three target categories
+    let label = "Neutral";
+    let detected = maxEmotion;
+    
+    if (maxEmotion === "happy") {
+        label = "Happy";
+    } else if (maxEmotion === "angry" || maxEmotion === "fear" || maxEmotion === "disgusted") {
+        label = "Unfazed";
+    } else if (maxEmotion === "sad" || maxEmotion === "disgust") {
+        label = "Concerned";
+    } else if (maxEmotion === "surprised") {
+        // Surprised can be either happy or neutral depending on context
+        label = "Happy";
+    }
+    
+    return { label, confidence: Math.round(maxValue * 100), detected };
+}
+
+function isCorrectExpression(detectedLabel, targetExpression) {
+    if (targetExpression === "Neutral") {
+        return detectedLabel === "Neutral";
+    } else if (targetExpression === "Steady Smile") {
+        return detectedLabel === "Happy";
+    } else if (targetExpression === "Unfazed") {
+        return detectedLabel === "Neutral" || detectedLabel === "Unfazed";
+    }
+    return false;
+}
+
 async function init() {
-    // Assign DOM elements first
     video = document.getElementById("webcam");
     startBtn = document.getElementById("start-btn");
     nextBtn = document.getElementById("next-btn");
@@ -45,32 +86,22 @@ async function init() {
     videoWrapper = document.getElementById("video-wrapper");
     feedbackPanel = document.getElementById("feedback-panel");
     feedbackText = document.getElementById("feedback-text");
+    
     try {
-        // Now safe to update UI as variables are assigned
         updateScenarioUI();
-        // Poll for MediaPipe Global
-        let mpFaceMesh = null;
-        for (let i = 0; i < 100; i++) {
-            if (window.FaceMesh) {
-                mpFaceMesh = window.FaceMesh;
-                break;
-            }
+        
+        let attempts = 0;
+        const maxAttempts = 100;
+        while (!window.ml5 && attempts < maxAttempts) {
             await new Promise(r => setTimeout(r, 100));
+            attempts++;
         }
-        if (!mpFaceMesh) {
-            if (statusText) statusText.innerText = "Error: Face Mesh library failed to load.";
+        
+        if (!window.ml5) {
+            if (statusText) statusText.innerText = "Error: ml5.js failed to load. Please refresh.";
             return;
         }
-        faceMesh = new mpFaceMesh({
-            locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh@0.4.1633559619/${file}`
-        });
-        faceMesh.setOptions({
-            maxNumFaces: 1,
-            refineLandmarks: true,
-            minDetectionConfidence: 0.6,
-            minTrackingConfidence: 0.6
-        });
-        faceMesh.onResults(onResults);
+        
         setupWebcam();
         
         startBtn.addEventListener("click", startChallenge);
@@ -83,86 +114,180 @@ async function init() {
         if (statusText) statusText.innerText = "Engine Error. Refreshing might help.";
     }
 }
+
 function setupWebcam() {
     navigator.mediaDevices.getUserMedia({ video: { width: 1280, height: 720, facingMode: "user" } })
         .then((stream) => {
             video.srcObject = stream;
             video.onloadedmetadata = () => {
                 video.play();
-                statusOverlay.classList.add('hidden');
-                startBtn.disabled = false;
-                processVideo();
+                
+                // FIX: Explicitly set the video dimensions to prevent resizeResults crash
+                video.width = video.videoWidth;
+                video.height = video.videoHeight;
+                
+                const options = {
+                    withLandmarks: true,
+                    withDescriptors: false,
+                    withExpressions: true // FIX: Force emotion engine to activate
+                };
+                
+                // FIX: Assign directly to global faceApiDetector 
+                faceApiDetector = ml5.faceApi(video, options, modelLoadedCallback);
             };
         })
         .catch(err => {
             if (statusText) statusText.innerText = "Camera denied. Please enable access.";
+            console.error("Camera error:", err);
         });
 }
-async function processVideo() {
-    if (faceMesh && video.readyState >= 2) {
-        await faceMesh.send({image: video});
-    }
-    requestAnimationFrame(processVideo);
-}
-function onResults(results) {
-    if (!results.multiFaceLandmarks?.[0]) return;
-    const landmarks = results.multiFaceLandmarks[0];
-    const eyeWidth = Math.sqrt(Math.pow(landmarks[33].x - landmarks[133].x, 2)); 
+
+function modelLoadedCallback() {
+    console.log("ml5.faceApi model loaded!");
+    modelReady = true;
+    statusOverlay.classList.add('hidden');
+    startBtn.disabled = false;
+    if (statusText) statusText.innerText = "Face detection ready. Center your face and click Start.";
     
-    // Smile calculation
-    const mouthWidth = Math.sqrt(Math.pow(landmarks[291].x - landmarks[61].x, 2) + Math.pow(landmarks[291].y - landmarks[61].y, 2));
-    const smileScore = Math.max(0, (mouthWidth / eyeWidth - 1.65) * 1.5);
-    // Brow calculation
-    const avgDist = ((landmarks[159].y - landmarks[52].y) + (landmarks[386].y - landmarks[282].y)) / 2;
-    const browScore = Math.max(0, (0.055 - avgDist) * 25);
-    const smilePct = Math.min(100, Math.round(smileScore * 100));
-    const browPct = Math.min(100, Math.round(browScore * 100));
-    const sVal = document.getElementById('val-smile');
-    const sBar = document.getElementById('bar-smile');
-    const bVal = document.getElementById('val-brow');
-    const bBar = document.getElementById('bar-brow');
-    if (sVal) sVal.innerText = smilePct + "%";
-    if (sBar) sBar.style.width = smilePct + "%";
-    if (bVal) bVal.innerText = browPct + "%";
-    if (bBar) bBar.style.width = browPct + "%";
-    if (isChallenging) checkChallenge(smilePct, browPct);
+    detectFaces();
 }
-function checkChallenge(smile, brow) {
+
+async function detectFaces() {
+    if (!modelReady || !faceApiDetector) {
+        requestAnimationFrame(detectFaces);
+        return;
+    }
+    
+    try {
+        // FIX: Directly call detect. Do not re-initialize the model.
+        faceApiDetector.detect(onFaceDetected);
+    } catch (err) {
+        console.error("Detection error:", err);
+        requestAnimationFrame(detectFaces);
+    }
+    // FIX: Removed trailing requestAnimationFrame from here. Now called in the callback.
+}
+
+function onFaceDetected(err, results) {
+    if (err) {
+        console.error("Face detection error:", err);
+        resetEmotionDisplay();
+        requestAnimationFrame(detectFaces); // Continue loop on error
+        return;
+    }
+    
+    if (results && results.length > 0) {
+        const prediction = results[0];
+        
+        // FIX: Provide empty object fallback if undefined to prevent crashing
+        const expressions = prediction.expressions || {}; 
+        
+        const emotion = emotionToLabel(expressions);
+        updateEmotionDisplay(emotion, expressions);
+        
+        if (isChallenging) {
+            checkChallenge(emotion);
+        }
+    } else {
+        resetEmotionDisplay();
+    }
+    
+    // FIX: Queue next frame ONLY after this frame completes its processing
+    requestAnimationFrame(detectFaces);
+}
+
+function updateEmotionDisplay(emotion, allExpressions) {
+    const emotionBarMap = {
+        'angry': 'angry',
+        'disgust': 'disgusted',
+        'fear': 'fearful',
+        'happy': 'happy',
+        'neutral': 'neutral',
+        'sad': 'sad',
+        'surprised': 'surprised'
+    };
+    
+    Object.entries(emotionBarMap).forEach(([ml5Emotion, barName]) => {
+        const val = document.getElementById('val-' + barName);
+        const bar = document.getElementById('bar-' + barName);
+        const pct = Math.round((allExpressions[ml5Emotion] || 0) * 100);
+        
+        if (val) val.innerText = pct + "%";
+        if (bar) bar.style.width = pct + "%";
+    });
+}
+
+function resetEmotionDisplay() {
+    const emotions =['neutral', 'happy', 'sad', 'angry', 'fearful', 'disgusted', 'surprised'];
+    emotions.forEach(e => {
+        const val = document.getElementById('val-' + e);
+        const bar = document.getElementById('bar-' + e);
+        if (val) val.innerText = "0%";
+        if (bar) bar.style.width = "0%";
+    });
+}
+
+function checkChallenge(emotion) {
     const scenario = scenarios[currentScenarioIdx];
-    let violated = (scenario.target !== "Steady Smile") ? (smile > 30 || brow > 45) : (smile < 12 || brow > 50);
-    if (violated) {
+    const isCorrect = isCorrectExpression(emotion.label, scenario.target);
+    const elapsed = performance.now() - challengeStartTime;
+    
+    if (elapsed > 30000) {
         isChallenging = false;
         videoWrapper.classList.add('failure-shake');
         startBtn.innerText = "Try Again";
         startBtn.classList.replace('bg-slate-700', 'bg-indigo-600');
+        timerBar.style.width = "0%";
+        feedbackPanel.classList.remove('hidden');
+        feedbackText.innerText = `Challenge timed out. Make sure your face is visible and well-lit.`;
         setTimeout(() => videoWrapper.classList.remove('failure-shake'), 500);
+        return;
+    }
+    
+    if (!isCorrect) {
+        if (emotion.confidence > 70) {
+            isChallenging = false;
+            videoWrapper.classList.add('failure-shake');
+            startBtn.innerText = "Try Again";
+            startBtn.classList.replace('bg-slate-700', 'bg-indigo-600');
+            timerBar.style.width = "0%";
+            feedbackPanel.classList.remove('hidden');
+            feedbackText.innerText = `Expected ${scenario.target}, detected ${emotion.detected || emotion.label}. Try again!`;
+            setTimeout(() => videoWrapper.classList.remove('failure-shake'), 500);
+        } else {
+            timerBar.style.width = "5%";
+        }
     } else {
-        const elapsed = performance.now() - challengeStartTime;
         timerBar.style.width = Math.min(100, (elapsed / CHALLENGE_DURATION) * 100) + "%";
+        
         if (elapsed >= CHALLENGE_DURATION) {
             isChallenging = false;
             startBtn.innerText = "Passed!";
             startBtn.classList.replace('bg-slate-700', 'bg-emerald-600');
             feedbackPanel.classList.remove('hidden');
-            feedbackText.innerText = `Great job maintaining focus!`;
-            // Render confetti on successful challenge
-            renderConfetti();
-            // Award XP and submit to backend
+            feedbackText.innerText = `Excellent! You maintained a ${scenario.target} expression for 3 seconds.`;
+            if (typeof renderConfetti === "function") renderConfetti();
             passCount++;
             submitPassToBackend(passCount);
         }
     }
 }
 
+function startChallenge() {
+    isChallenging = true;
+    challengeStartTime = performance.now();
+    feedbackPanel.classList.add('hidden');
+    startBtn.innerText = "Focusing...";
+    startBtn.classList.replace('bg-indigo-600', 'bg-slate-700');
+    timerBar.style.width = "0%";
+}
+
 async function submitPassToBackend(passNum) {
     try {
         const token = localStorage.getItem('ss_token') || localStorage.getItem('auth_token');
-        if (!token) {
-            console.log('No authentication token found');
-            return;
-        }
+        if (!token) return;
         
-        const response = await fetch('/api/module8/pass', {
+        const response = await fetch('/module8/result', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -187,13 +312,6 @@ async function submitPassToBackend(passNum) {
     }
 }
 
-function startChallenge() {
-    isChallenging = true;
-    challengeStartTime = performance.now();
-    feedbackPanel.classList.add('hidden');
-    startBtn.innerText = "Focusing...";
-    startBtn.classList.replace('bg-indigo-600', 'bg-slate-700');
-}
 function updateScenarioUI() {
     const s = scenarios[currentScenarioIdx];
     const title = document.getElementById('scenario-title');
@@ -201,17 +319,15 @@ function updateScenarioUI() {
     const target = document.getElementById('target-expression');
     
     if (title) title.innerText = s.title;
-    if (desc) {
-        // Use innerHTML because scenario desc might contain spans
-        desc.innerHTML = s.desc.replace(s.target, `<span class="text-white font-bold">${s.target}</span>`);
-    }
+    if (desc) desc.innerHTML = s.desc.replace(s.target, `<span class="text-white font-bold">${s.target}</span>`);
     if (target) target.innerText = s.target;
     
     if (startBtn) {
         startBtn.innerText = "Start Focus";
-        startBtn.className = "bg-indigo-600 hover:bg-indigo-500 disabled:bg-slate-800 disabled:text-slate-500 px-8 py-3 rounded-full font-bold transition-all shadow-lg active:scale-95";
+        startBtn.className = "bg-indigo-600 hover:bg-indigo-500 disabled:bg-slate-800 disabled:text-slate-500 px-8 py-3 rounded-full font-bold transition-all shadow-lg active:scale-95 flex items-center gap-3";
     }
     if (feedbackPanel) feedbackPanel.classList.add('hidden');
     if (timerBar) timerBar.style.width = "0%";
 }
+
 window.addEventListener('load', init);
