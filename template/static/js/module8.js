@@ -26,6 +26,25 @@ let isChallenging = false;
 let challengeStartTime = 0;
 const CHALLENGE_DURATION = 3000; 
 
+function updateScenarioUI() {
+    const s = scenarios[currentScenarioIdx];
+    const title = document.getElementById('scenario-title');
+    const desc = document.getElementById('scenario-desc');
+    const target = document.getElementById('target-expression');
+    
+    if (title) title.innerText = s.title;
+    if (desc) desc.innerHTML = s.desc;
+    if (target) target.innerText = s.target;
+    
+    if (startBtn) {
+        startBtn.innerHTML = `<i class="fa-solid fa-eye"></i> Start Focus`;
+        startBtn.className = "bg-indigo-600 hover:bg-indigo-500 disabled:bg-slate-800 disabled:text-slate-600 px-8 py-3 rounded-full font-bold transition-all flex items-center gap-3 shadow-lg shadow-indigo-500/20 active:scale-95";
+        startBtn.disabled = !faceMesh;
+    }
+    if (feedbackPanel) feedbackPanel.classList.add('hidden');
+    if (timerBar) timerBar.style.width = "0%";
+}
+
 async function init() {
     video = document.getElementById("webcam");
     startBtn = document.getElementById("start-btn");
@@ -235,23 +254,5 @@ function winChallenge() {
     }, 2000);
 }
 
-function updateScenarioUI() {
-    const s = scenarios[currentScenarioIdx];
-    const title = document.getElementById('scenario-title');
-    const desc = document.getElementById('scenario-desc');
-    const target = document.getElementById('target-expression');
-    
-    if (title) title.innerText = s.title;
-    if (desc) desc.innerHTML = s.desc;
-    if (target) target.innerText = s.target;
-    
-    if (startBtn) {
-        startBtn.innerHTML = `<i class="fa-solid fa-eye"></i> Start Focus`;
-        startBtn.className = "bg-indigo-600 hover:bg-indigo-500 disabled:bg-slate-800 disabled:text-slate-600 px-8 py-3 rounded-full font-bold transition-all flex items-center gap-3 shadow-lg shadow-indigo-500/20 active:scale-95";
-        startBtn.disabled = !faceMesh;
-    }
-    if (feedbackPanel) feedbackPanel.classList.add('hidden');
-    if (timerBar) timerBar.style.width = "0%";
-}
 
 window.addEventListener('load', init);
