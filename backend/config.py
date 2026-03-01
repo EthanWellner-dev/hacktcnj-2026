@@ -73,5 +73,10 @@ API_KEYS = load_api_keys()
 # Initialize Gemini client
 GEMINI_CLIENT = None
 if API_KEYS['gemini']:
-    GEMINI_CLIENT = genai.Client(api_key=API_KEYS['gemini'])
-    print("✓ Gemini API initialized with fallback support")
+    try:
+        GEMINI_CLIENT = genai.Client(api_key=API_KEYS['gemini'])
+        print("✓ Gemini API initialized with fallback support")
+    except Exception as e:
+        print(f"✗ Failed to initialize Gemini client: {e}")
+else:
+    print("✗ Gemini API key not found in secrets.env")
