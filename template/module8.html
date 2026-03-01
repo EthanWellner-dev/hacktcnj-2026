@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>The Poker Face | Social Sandbox</title>
+    <title>The Poker Face | Bridge Communications</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/gh/ml5js/Intro-ML-Arts-IMA@ml5-build-10-7-19/ml5_build/ml5.min.js"></script>
@@ -159,8 +159,9 @@
 
             <!-- Center: Video Feed -->
             <div class="lg:col-span-2 flex flex-col items-center order-1 lg:order-2">
-                <div id="video-wrapper" class="video-container glass-panel aspect-video w-full max-w-2xl border-2 border-slate-800">
+                <div id="video-wrapper" class="video-container glass-panel aspect-video w-full max-w-2xl border-4 border-slate-800 transition-colors duration-300" style="border-color: rgb(30, 41, 59);">
                     <video id="webcam" class="w-full h-full object-cover" autoplay playsinline></video>
+                    <audio id="scenario-audio" style="display: none;"></audio>
                     
                     <!-- Overlay Message -->
                     <div id="status-overlay" class="absolute inset-0 flex items-center justify-center bg-slate-950/80 z-20 transition-opacity duration-500">
@@ -178,7 +179,7 @@
 
                 <div class="mt-8 flex gap-4 w-full justify-center">
                     <button id="start-btn" disabled class="bg-indigo-600 hover:bg-indigo-500 disabled:bg-slate-800 disabled:text-slate-600 px-8 py-3 rounded-full font-bold transition-all flex items-center gap-3 shadow-lg shadow-indigo-500/20 active:scale-95">
-                        <i class="fa-solid fa-eye"></i> Start Focus
+                        <i class="fa-solid fa-play"></i> Start Challenge
                     </button>
                     <button id="next-btn" class="bg-slate-800 hover:bg-slate-700 px-6 py-3 rounded-full font-bold transition-all border border-white/5">
                         Next Scenario
@@ -194,11 +195,15 @@
                     <i class="fa-solid fa-face-smile text-indigo-400"></i>
                 </div>
                 <div>
-                    <h3 class="font-bold text-white">Expression Audit Complete</h3>
-                    <p class="text-xs text-slate-500 font-mono">Vision Model: ml5.js (TensorFlow.js) FER+ Emotions</p>
+                    <h3 class="font-bold text-white">Challenge Complete</h3>
+                    <p class="text-xs text-slate-500 font-mono">Expression Accuracy Scored</p>
                 </div>
             </div>
             <p id="feedback-text" class="text-sm text-slate-300 leading-relaxed italic"></p>
+            <div id="score-display" class="mt-4 text-center">
+                <div class="text-3xl font-bold text-emerald-400" id="final-xp">0</div>
+                <div class="text-xs text-slate-400">XP Earned</div>
+            </div>
         </div>
 
         <!-- Background Glow -->

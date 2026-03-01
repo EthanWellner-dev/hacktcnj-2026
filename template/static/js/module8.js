@@ -1,32 +1,39 @@
 const scenarios =[
-    { title: "The Monologue", desc: "A peer is explaining their complex hobby. Look 'Politely Interested'.", target: "Neutral" },
-    { title: "The Critique", desc: "You just received unexpected feedback. Stay 'Unfazed'.", target: "Unfazed" },
-    { title: "The Bad Joke", desc: "A teacher tells a joke that lands flat. Maintain a 'Steady Smile'.", target: "Steady Smile" },
-    { title: "The Endless Meeting", desc: "A colleague is reading through an incredibly dry spreadsheet line by line. Keep it together.", target: "Neutral" },
-    { title: "The Spilled Coffee", desc: "Someone accidentally knocks over a drink dangerously close to your laptop. Show no panic.", target: "Unfazed" },
-    { title: "The Terrible Gift", desc: "You just unwrapped a present you absolutely hate while the giver watches. Look appreciative.", target: "Steady Smile" },
-    { title: "The Elevator Ride", desc: "You are sharing a tiny elevator with your boss in complete silence. Stare at the doors calmly.", target: "Neutral" },
-    { title: "The Wrong Name", desc: "An acquaintance confidently calls you by the wrong name for the third time. Let it slide.", target: "Unfazed" },
-    { title: "The Family Photo", desc: "The photographer is taking forever to figure out the camera settings. Hold the pose.", target: "Steady Smile" },
-    { title: "The Overheard Argument", desc: "Two strangers are bickering loudly on public transit. Look straight ahead, minding your business.", target: "Neutral" },
-    { title: "The Sudden Noise", desc: "A heavy textbook is dropped right behind your chair. Don't jump or flinch.", target: "Unfazed" },
-    { title: "The Over-Sharer", desc: "A distant relative is telling a very long, slightly uncomfortable story at dinner. Keep it polite.", target: "Steady Smile" },
-    { title: "The Instruction Manual", desc: "You are listening to a flight attendant's safety briefing for the hundredth time. Pay calm attention.", target: "Neutral" },
-    { title: "The Tech Glitch", desc: "Your presentation freezes right in the middle of a crucial slide. Stay cool while it loads.", target: "Unfazed" },
-    { title: "The Awkward Silence", desc: "The conversation dies out completely at a networking event. Fill the gap with a pleasant look.", target: "Steady Smile" },
-    { title: "The Waiting Room", desc: "Your appointment is running twenty minutes late. Sit calmly without checking your phone.", target: "Neutral" },
-    { title: "The Accidental Reply-All", desc: "A coworker hits 'Reply All' with a mildly embarrassing message. Keep a poker face.", target: "Unfazed" },
-    { title: "The Retail Shift", desc: "A customer is complaining to you about something completely out of your control. Nod pleasantly.", target: "Steady Smile" }
+    { title: "The Monologue", desc: "A peer is explaining their complex hobby. Listen and maintain 'Politely Interested'.", target: "Neutral" },
+    { title: "The Critique", desc: "You just received unexpected feedback. Listen and stay 'Unfazed'.", target: "Unfazed" },
+    { title: "The Bad Joke", desc: "A teacher tells a joke that lands flat. Listen and maintain a 'Steady Smile'.", target: "Steady Smile" },
+    { title: "The Endless Meeting", desc: "A colleague is reading through an incredibly dry spreadsheet line by line. Listen and keep it together.", target: "Neutral" },
+    { title: "The Spilled Coffee", desc: "Someone accidentally knocks over a drink dangerously close to your laptop. Listen and show no panic.", target: "Unfazed" },
+    { title: "The Terrible Gift", desc: "You just unwrapped a present you absolutely hate while the giver watches. Listen and look appreciative.", target: "Steady Smile" },
+    { title: "The Elevator Ride", desc: "You are sharing a tiny elevator with your boss in complete silence. Listen and stare calmly.", target: "Neutral" },
+    { title: "The Wrong Name", desc: "An acquaintance confidently calls you by the wrong name for the third time. Listen and let it slide.", target: "Unfazed" },
+    { title: "The Family Photo", desc: "The photographer is taking forever to figure out the camera settings. Listen and hold the pose.", target: "Steady Smile" },
+    { title: "The Overheard Argument", desc: "Two strangers are bickering loudly on public transit. Listen and look straight ahead.", target: "Neutral" },
+    { title: "The Sudden Noise", desc: "A heavy textbook is dropped right behind your chair. Listen and don't jump or flinch.", target: "Unfazed" },
+    { title: "The Over-Sharer", desc: "A distant relative is telling a very long, slightly uncomfortable story at dinner. Listen and keep it polite.", target: "Steady Smile" },
+    { title: "The Instruction Manual", desc: "You are listening to a flight attendant's safety briefing for the hundredth time. Listen and pay calm attention.", target: "Neutral" },
+    { title: "The Tech Glitch", desc: "Your presentation freezes right in the middle of a crucial slide. Listen and stay cool while it loads.", target: "Unfazed" },
+    { title: "The Awkward Silence", desc: "The conversation dies out completely at a networking event. Listen and fill the gap with a pleasant look.", target: "Steady Smile" },
+    { title: "The Waiting Room", desc: "Your appointment is running twenty minutes late. Listen and sit calmly without checking your phone.", target: "Neutral" },
+    { title: "The Accidental Reply-All", desc: "A coworker hits 'Reply All' with a mildly embarrassing message. Listen and keep a poker face.", target: "Unfazed" },
+    { title: "The Retail Shift", desc: "A customer is complaining to you about something completely out of your control. Listen and nod pleasantly.", target: "Steady Smile" }
 ];
 
 let currentScenarioIdx = 0;
 let faceApiDetector;
-let video, startBtn, nextBtn, timerBar, statusOverlay, statusText, videoWrapper, feedbackPanel, feedbackText;
+let video, startBtn, nextBtn, timerBar, statusOverlay, statusText, videoWrapper, feedbackPanel, feedbackText, scenarioAudio;
 let isChallenging = false;
 let challengeStartTime = 0;
 let passCount = 0;
-const CHALLENGE_DURATION = 3000;
-let modelReady = false; 
+let modelReady = false;
+
+// Performance tracking
+let correctFrames = 0;
+let totalFrames = 0;
+let currentPerformanceScore = 0; // 0-100
+let audioDuration = 0;
+let audioStartTime = 0;
+const COUNTDOWN_DURATION = 5000; // 5 seconds before audio starts 
 
 function emotionToLabel(emotionScores) {
     if (!emotionScores) return { label: "unknown", confidence: 0 };
@@ -58,7 +65,6 @@ function emotionToLabel(emotionScores) {
     } else if (maxEmotion === "sad" || maxEmotion === "disgust") {
         label = "Concerned";
     } else if (maxEmotion === "surprised") {
-        // Surprised can be either happy or neutral depending on context
         label = "Happy";
     }
     
@@ -76,6 +82,33 @@ function isCorrectExpression(detectedLabel, targetExpression) {
     return false;
 }
 
+function updateBorderColor(accuracy) {
+    /**
+     * Update the video wrapper border color based on accuracy score.
+     * Dark green (80%+) → Yellow (60-80%) → Orange (40-60%) → Red (<40%)
+     */
+    let borderColor;
+    
+    if (accuracy >= 80) {
+        // Dark green
+        borderColor = 'rgb(34, 120, 71)'; // emerald-700
+    } else if (accuracy >= 60) {
+        // Light green
+        borderColor = 'rgb(74, 222, 128)'; // lime-400
+    } else if (accuracy >= 40) {
+        // Yellow
+        borderColor = 'rgb(234, 179, 8)'; // yellow-500
+    } else if (accuracy >= 20) {
+        // Orange
+        borderColor = 'rgb(239, 105, 37)'; // orange-500
+    } else {
+        // Dark red
+        borderColor = 'rgb(127, 29, 29)'; // red-900
+    }
+    
+    videoWrapper.style.borderColor = borderColor;
+}
+
 async function init() {
     video = document.getElementById("webcam");
     startBtn = document.getElementById("start-btn");
@@ -86,6 +119,7 @@ async function init() {
     videoWrapper = document.getElementById("video-wrapper");
     feedbackPanel = document.getElementById("feedback-panel");
     feedbackText = document.getElementById("feedback-text");
+    scenarioAudio = document.getElementById("scenario-audio");
     
     try {
         updateScenarioUI();
@@ -116,23 +150,21 @@ async function init() {
 }
 
 function setupWebcam() {
-    navigator.mediaDevices.getUserMedia({ video: { width: 1280, height: 720, facingMode: "user" } })
+    navigator.mediaDevices.getUserMedia({ video: { width: 1280/2, height: 720/2, facingMode: "user" } })
         .then((stream) => {
             video.srcObject = stream;
             video.onloadedmetadata = () => {
                 video.play();
                 
-                // FIX: Explicitly set the video dimensions to prevent resizeResults crash
                 video.width = video.videoWidth;
                 video.height = video.videoHeight;
                 
                 const options = {
                     withLandmarks: true,
                     withDescriptors: false,
-                    withExpressions: true // FIX: Force emotion engine to activate
+                    withExpressions: true
                 };
                 
-                // FIX: Assign directly to global faceApiDetector 
                 faceApiDetector = ml5.faceApi(video, options, modelLoadedCallback);
             };
         })
@@ -147,7 +179,7 @@ function modelLoadedCallback() {
     modelReady = true;
     statusOverlay.classList.add('hidden');
     startBtn.disabled = false;
-    if (statusText) statusText.innerText = "Face detection ready. Center your face and click Start.";
+    if (statusText) statusText.innerText = "Ready. Click Start Challenge to begin.";
     
     detectFaces();
 }
@@ -159,41 +191,62 @@ async function detectFaces() {
     }
     
     try {
-        // FIX: Directly call detect. Do not re-initialize the model.
         faceApiDetector.detect(onFaceDetected);
     } catch (err) {
         console.error("Detection error:", err);
         requestAnimationFrame(detectFaces);
     }
-    // FIX: Removed trailing requestAnimationFrame from here. Now called in the callback.
 }
 
 function onFaceDetected(err, results) {
     if (err) {
         console.error("Face detection error:", err);
         resetEmotionDisplay();
-        requestAnimationFrame(detectFaces); // Continue loop on error
+        requestAnimationFrame(detectFaces);
         return;
     }
     
     if (results && results.length > 0) {
         const prediction = results[0];
-        
-        // FIX: Provide empty object fallback if undefined to prevent crashing
         const expressions = prediction.expressions || {}; 
-        
         const emotion = emotionToLabel(expressions);
         updateEmotionDisplay(emotion, expressions);
         
         if (isChallenging) {
-            checkChallenge(emotion);
+            trackChallengePerformance(emotion);
         }
     } else {
         resetEmotionDisplay();
     }
     
-    // FIX: Queue next frame ONLY after this frame completes its processing
     requestAnimationFrame(detectFaces);
+}
+
+function trackChallengePerformance(emotion) {
+    /**
+     * Track performance throughout the audio playback.
+     * Update border color in real-time based on accuracy.
+     */
+    const scenario = scenarios[currentScenarioIdx];
+    const isCorrect = isCorrectExpression(emotion.label, scenario.target);
+    
+    totalFrames++;
+    if (isCorrect) {
+        correctFrames++;
+    }
+    
+    // Calculate running accuracy
+    currentPerformanceScore = Math.round((correctFrames / totalFrames) * 100);
+    
+    // Update border color based on current performance
+    updateBorderColor(currentPerformanceScore);
+    
+    // Update timer bar to show audio progress
+    if (audioStartTime > 0 && audioDuration > 0) {
+        const elapsed = performance.now() - audioStartTime;
+        const progress = Math.min(100, (elapsed / audioDuration) * 100);
+        timerBar.style.width = progress + "%";
+    }
 }
 
 function updateEmotionDisplay(emotion, allExpressions) {
@@ -227,62 +280,117 @@ function resetEmotionDisplay() {
     });
 }
 
-function checkChallenge(emotion) {
-    const scenario = scenarios[currentScenarioIdx];
-    const isCorrect = isCorrectExpression(emotion.label, scenario.target);
-    const elapsed = performance.now() - challengeStartTime;
-    
-    if (elapsed > 30000) {
-        isChallenging = false;
-        videoWrapper.classList.add('failure-shake');
-        startBtn.innerText = "Try Again";
-        startBtn.classList.replace('bg-slate-700', 'bg-indigo-600');
-        timerBar.style.width = "0%";
-        feedbackPanel.classList.remove('hidden');
-        feedbackText.innerText = `Challenge timed out. Make sure your face is visible and well-lit.`;
-        setTimeout(() => videoWrapper.classList.remove('failure-shake'), 500);
-        return;
-    }
-    
-    if (!isCorrect) {
-        if (emotion.confidence > 70) {
-            isChallenging = false;
-            videoWrapper.classList.add('failure-shake');
-            startBtn.innerText = "Try Again";
-            startBtn.classList.replace('bg-slate-700', 'bg-indigo-600');
-            timerBar.style.width = "0%";
-            feedbackPanel.classList.remove('hidden');
-            feedbackText.innerText = `Expected ${scenario.target}, detected ${emotion.detected || emotion.label}. Try again!`;
-            setTimeout(() => videoWrapper.classList.remove('failure-shake'), 500);
-        } else {
-            timerBar.style.width = "5%";
-        }
-    } else {
-        timerBar.style.width = Math.min(100, (elapsed / CHALLENGE_DURATION) * 100) + "%";
+async function loadAudio(scenarioIdx) {
+    /**
+     * Request audio from backend and load it into the audio element.
+     */
+    try {
+        const response = await fetch(`/module8/audio/${scenarioIdx}`);
+        const data = await response.json();
         
-        if (elapsed >= CHALLENGE_DURATION) {
-            isChallenging = false;
-            startBtn.innerText = "Passed!";
-            startBtn.classList.replace('bg-slate-700', 'bg-emerald-600');
-            feedbackPanel.classList.remove('hidden');
-            feedbackText.innerText = `Excellent! You maintained a ${scenario.target} expression for 3 seconds.`;
-            if (typeof renderConfetti === "function") renderConfetti();
-            passCount++;
-            submitPassToBackend(passCount);
+        if (data.error) {
+            console.error("Audio generation error:", data.message);
+            if (statusText) statusText.innerText = "Could not load audio. Try again.";
+            startBtn.disabled = false;
+            startBtn.innerText = "Start Challenge";
+            return false;
         }
+        
+        scenarioAudio.src = data.url;
+        return true;
+    } catch (err) {
+        console.error("Error loading audio:", err);
+        if (statusText) statusText.innerText = "Could not load audio. Try again.";
+        startBtn.disabled = false;
+        startBtn.innerText = "Start Challenge";
+        return false;
     }
 }
 
 function startChallenge() {
-    isChallenging = true;
-    challengeStartTime = performance.now();
+    startBtn.disabled = true;
+    startBtn.innerText = "Loading...";
     feedbackPanel.classList.add('hidden');
-    startBtn.innerText = "Focusing...";
-    startBtn.classList.replace('bg-indigo-600', 'bg-slate-700');
     timerBar.style.width = "0%";
+    
+    // Load audio first
+    loadAudio(currentScenarioIdx).then((success) => {
+        if (!success) return;
+        
+        // Start countdown
+        let countdownSeconds = COUNTDOWN_DURATION / 1000;
+        if (statusText) statusText.innerText = `Starting in ${countdownSeconds} seconds...`;
+        statusOverlay.classList.remove('hidden');
+        
+        const countdownInterval = setInterval(() => {
+            countdownSeconds--;
+            if (statusText) {
+                statusText.innerText = countdownSeconds > 0 
+                    ? `Starting in ${countdownSeconds} second${countdownSeconds > 1 ? 's' : ''}...`
+                    : "Go!";
+            }
+        }, 1000);
+        
+        setTimeout(() => {
+            clearInterval(countdownInterval);
+            statusOverlay.classList.add('hidden');
+            
+            // Reset performance tracking
+            correctFrames = 0;
+            totalFrames = 0;
+            currentPerformanceScore = 0;
+            
+            // Play audio and start challenge
+            isChallenging = true;
+            challengeStartTime = performance.now();
+            audioStartTime = performance.now();
+            scenarioAudio.play();
+            
+            startBtn.innerText = "Challenge Running...";
+            
+            // Handle audio end
+            scenarioAudio.onended = onAudioEnded;
+            
+            // Get audio duration for progress bar (may not be immediately available)
+            scenarioAudio.onloadedmetadata = () => {
+                audioDuration = scenarioAudio.duration * 1000;
+            };
+        }, COUNTDOWN_DURATION);
+    });
 }
 
-async function submitPassToBackend(passNum) {
+function onAudioEnded() {
+    /**
+     * Called when audio playback ends.
+     * Calculate final score, show feedback, and submit XP.
+     */
+    isChallenging = false;
+    startBtn.disabled = false;
+    startBtn.innerText = "Start Challenge";
+    timerBar.style.width = "100%";
+    
+    // Final performance score
+    const finalScore = currentPerformanceScore;
+    const scenario = scenarios[currentScenarioIdx];
+    
+    // Calculate XP based on accuracy (0-100 accuracy → 0-100 XP)
+    const xpEarned = Math.round(finalScore);
+    
+    // Show feedback
+    feedbackPanel.classList.remove('hidden');
+    feedbackText.innerText = `You maintained a ${scenario.target} expression with ${finalScore}% accuracy throughout the challenge.`;
+    document.getElementById('final-xp').innerText = xpEarned;
+    
+    // Update border to reflect final score
+    updateBorderColor(finalScore);
+    
+    // Submit to backend
+    submitResultToBackend(finalScore, xpEarned);
+    
+    passCount++;
+}
+
+async function submitResultToBackend(accuracyScore, xpEarned) {
     try {
         const token = localStorage.getItem('ss_token') || localStorage.getItem('auth_token');
         if (!token) return;
@@ -294,9 +402,9 @@ async function submitPassToBackend(passNum) {
                 'Authorization': `Bearer ${token}`
             },
             body: JSON.stringify({
-                pass_number: passNum,
                 scenario: scenarios[currentScenarioIdx].title,
-                xp: 100
+                accuracy_score: accuracyScore,
+                xp: xpEarned
             })
         });
         
@@ -308,7 +416,7 @@ async function submitPassToBackend(passNum) {
             }
         }
     } catch (err) {
-        console.error('Error submitting pass:', err);
+        console.error('Error submitting result:', err);
     }
 }
 
@@ -323,11 +431,13 @@ function updateScenarioUI() {
     if (target) target.innerText = s.target;
     
     if (startBtn) {
-        startBtn.innerText = "Start Focus";
-        startBtn.className = "bg-indigo-600 hover:bg-indigo-500 disabled:bg-slate-800 disabled:text-slate-500 px-8 py-3 rounded-full font-bold transition-all shadow-lg active:scale-95 flex items-center gap-3";
+        startBtn.innerText = "Start Challenge";
+        startBtn.className = "bg-indigo-600 hover:bg-indigo-500 disabled:bg-slate-800 disabled:text-slate-600 px-8 py-3 rounded-full font-bold transition-all shadow-lg shadow-indigo-500/20 active:scale-95 flex items-center gap-3";
+        startBtn.disabled = false;
     }
     if (feedbackPanel) feedbackPanel.classList.add('hidden');
     if (timerBar) timerBar.style.width = "0%";
+    updateBorderColor(0); // Reset border to neutral
 }
 
 window.addEventListener('load', init);
