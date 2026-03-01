@@ -20,7 +20,7 @@
         
         <!-- LEFT: Chat Messages -->
         <div class="lg:col-span-2 glass-panel rounded-xl p-6 flex flex-col">
-            <h3 class="text-sm font-mono text-slate-400 mb-4 uppercase tracking-wider">Alex (Tech Conf)</h3>
+            <h3 id="chat-name" class="text-sm font-mono text-slate-400 mb-4 uppercase tracking-wider">Alex (Tech Conf)</h3>
             <div id="messages-container" class="space-y-3 flex-1 overflow-y-auto mb-4">
                 <!-- Messages will be rendered here -->
             </div>
@@ -64,6 +64,34 @@
     let isProcessing = false;
     let currentScenario = '';
 
+    // Extract name and context from scenario text
+    function extractNameAndContext(scenario) {
+        // Look for capitalized words that could be names
+        const nameMatches = scenario.match(/\b([A-Z][a-z]{2,})\b/g);
+        let name = 'Contact';
+        let context = 'Networking';
+        
+        if (nameMatches && nameMatches.length > 0) {
+            // Filter out common words
+            for (let match of nameMatches) {
+                if (!['You', 'The', 'They', 'Send', 'Reach', 'Follow', 'Offer', 'Connect', 'This', 'Their'].includes(match)) {
+                    name = match;
+                    break;
+                }
+            }
+        }
+        
+        // Try to extract location/context
+        const locationMatch = scenario.match(/at a\s+([^.]+?)(?:\.|,)/);
+        if (locationMatch) {
+            context = locationMatch[1].toLowerCase();
+            // Capitalize first letter
+            context = context.charAt(0).toUpperCase() + context.slice(1);
+        }
+        
+        return { name, context };
+    }
+
     // List of varied icebreaker scenarios
     const scenarios = [
         "You just met Alex at a tech conference. Alex works at a cool startup and mentioned they're building AI tools. Send them a text to establish a connection and mention something you both discussed.",
@@ -93,6 +121,11 @@
             // Select random scenario
             currentScenario = scenarios[Math.floor(Math.random() * scenarios.length)];
             document.getElementById('scenario-text').textContent = currentScenario;
+            
+            // Extract name and context from scenario and update header
+            const { name, context } = extractNameAndContext(currentScenario);
+            document.getElementById('chat-name').textContent = `${name} (${context})`;
+            
             await backend.fetchMe();
         } catch (err) {
             console.error('Init error:', err);

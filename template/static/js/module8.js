@@ -24,7 +24,16 @@ let faceMesh;
 let video, startBtn, nextBtn, timerBar, statusOverlay, statusText, videoWrapper, feedbackPanel, feedbackText;
 let isChallenging = false;
 let challengeStartTime = 0;
+let passCount = 0;
 const CHALLENGE_DURATION = 3000; 
+
+function startChallenge() {
+    isChallenging = true;
+    challengeStartTime = performance.now();
+    feedbackPanel.classList.add('hidden');
+    startBtn.innerText = "Focusing...";
+    startBtn.classList.replace('bg-indigo-600', 'bg-slate-700');
+} 
 async function init() {
     // Assign DOM elements first
     video = document.getElementById("webcam");
@@ -136,9 +145,48 @@ function checkChallenge(smile, brow) {
             startBtn.classList.replace('bg-slate-700', 'bg-emerald-600');
             feedbackPanel.classList.remove('hidden');
             feedbackText.innerText = `Great job maintaining focus!`;
+            // Render confetti on successful challenge
+            renderConfetti();
+            // Award XP and submit to backend
+            passCount++;
+            submitPassToBackend(passCount);
         }
     }
 }
+
+async function submitPassToBackend(passNum) {
+    try {
+        const token = localStorage.getItem('ss_token') || localStorage.getItem('auth_token');
+        if (!token) {
+            console.log('No authentication token found');
+            return;
+        }
+        
+        const response = await fetch('/api/module8/pass', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({
+                pass_number: passNum,
+                scenario: scenarios[currentScenarioIdx].title,
+                xp: 100
+            })
+        });
+        
+        const data = await response.json();
+        if (data.xp_current !== undefined) {
+            const xpDisplay = document.getElementById('user-xp');
+            if (xpDisplay) {
+                xpDisplay.textContent = data.xp_current.toLocaleString();
+            }
+        }
+    } catch (err) {
+        console.error('Error submitting pass:', err);
+    }
+}
+
 function startChallenge() {
     isChallenging = true;
     challengeStartTime = performance.now();

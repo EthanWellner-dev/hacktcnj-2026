@@ -47,6 +47,12 @@ function setupButtons() {
     document.getElementById('btn-modules').addEventListener('click', () => {
         window.location.href = '/modules';
     });
+    const btnMatching = document.getElementById('btn-matching');
+    if (btnMatching) {
+        btnMatching.addEventListener('click', () => {
+            window.location.href = '/matching';
+        });
+    }
     document.getElementById('logout').addEventListener('click', () => {
         localStorage.removeItem('ss_token');
         window.location.href = '/';

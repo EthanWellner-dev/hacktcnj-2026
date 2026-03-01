@@ -242,6 +242,15 @@
         document.getElementById('messages-container').parentElement.parentElement.classList.add('hidden');
         document.getElementById('complete-screen').classList.remove('hidden');
         document.getElementById('total-xp').textContent = `Total XP Earned: +${totalXpEarned}`;
+        
+        // Submit final XP to backend
+        backend.submitTrainingResults('module1', {
+            total_xp: totalXpEarned,
+            exercises_completed: 10
+        });
+        
+        // Render confetti
+        renderConfetti();
     }
 
     // Initialize

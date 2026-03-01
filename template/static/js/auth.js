@@ -34,14 +34,30 @@ async function registerHandler(e) {
     const username = document.getElementById('username').value.trim();
     const password = document.getElementById('password').value;
     const persona = document.getElementById('persona').value;
+    const age = document.getElementById('age').value;
+    const gender = document.getElementById('gender').value || null;
+    const bio = document.getElementById('bio').value.trim();
     const status = document.getElementById('status');
+    
+    // Collect hobbies
+    const hobbyCheckboxes = document.querySelectorAll('.hobby-checkbox:checked');
+    const hobbies = Array.from(hobbyCheckboxes).map(cb => cb.value);
+    
     status.textContent = '';
 
     try {
         const resp = await fetch('/api/users/signup', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ username, password, persona })
+            body: JSON.stringify({ 
+                username, 
+                password, 
+                persona,
+                age: age ? parseInt(age) : null,
+                gender,
+                hobbies,
+                bio
+            })
         });
         const data = await resp.json();
         if (resp.ok && data.status === 'success') {

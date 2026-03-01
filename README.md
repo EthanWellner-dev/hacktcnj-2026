@@ -1,9 +1,9 @@
-# hacktcnj-2026
+# Bridge Communications Co
 The winners ofc 🤪
 
-🌐 Social Sandbox: Project Overview
+🌐 Bridge Communications Co: Project Overview
 
-Elevator Pitch: Social Sandbox is a gamified, privacy-focused training platform designed to help users practice and improve their real-world social skills in a safe, low-stakes digital environment. Powered by a custom-hosted local AI, the platform provides highly specific, actionable feedback to build social confidence without compromising user data.
+Elevator Pitch: Bridge Communications Co is a gamified, privacy-focused training platform designed to help users practice and improve their real-world social skills in a safe, low-stakes digital environment. Powered by a custom-hosted local AI, the platform provides highly specific, actionable feedback to build social confidence without compromising user data.
 
 🛑 The Problem
 
@@ -11,7 +11,7 @@ Post-pandemic isolation and the rise of digital-first communication have left ma
 
 💡 The Solution
 
-Social Sandbox acts as a "flight simulator" for human interaction. By breaking down social skills into gamified, bite-sized modules across three distinct "Gyms," users can safely train their communication muscles, earn XP (Humanity Score), and climb a global leaderboard.
+Bridge Communications Co acts as a "flight simulator" for human interaction. By breaking down social skills into gamified, bite-sized modules across three distinct "Gyms," users can safely train their communication muscles, earn XP (Humanity Score), and climb a global leaderboard.
 
 🏛️ The Three Training Gyms
 

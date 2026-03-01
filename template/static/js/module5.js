@@ -288,6 +288,8 @@ function displayAnalysis(data) {
         if (data.is_resolved) {
             resolutionText.innerHTML = '<i class="fa-solid fa-check-circle mr-2"></i>Conflict Resolved!';
             resolutionText.className = 'text-sm font-bold text-emerald-400';
+            // Render confetti on successful resolution
+            renderConfetti();
         } else if (data.is_escalating) {
             resolutionText.innerHTML = '<i class="fa-solid fa-exclamation-circle mr-2"></i>Situation Escalated';
             resolutionText.className = 'text-sm font-bold text-rose-400';

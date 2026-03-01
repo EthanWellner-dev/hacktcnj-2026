@@ -1,0 +1,167 @@
+{% extends 'base.html' %}
+{% block title %}Group Chat &mdash; Social Sandbox{% endblock %}
+{% block content %}
+
+{% include '_nav.html' %}
+
+<main class="flex-1 w-full max-w-6xl mx-auto p-6 flex flex-col gap-6 relative z-10">
+    
+    <!-- Header -->
+    <div class="glass-panel rounded-xl p-6">
+        <div class="inline-block bg-purple-900/50 text-purple-300 px-3 py-1 rounded-full text-xs font-mono border border-purple-500/30 mb-3">
+            GROUP CHAT
+        </div>
+        <h2 class="text-2xl font-bold mb-2 text-white" id="chat-title">Chat Room</h2>
+        <p class="text-slate-400 text-sm">Practice kindness, stay positive, and build meaningful connections. Be respectful!</p>
+    </div>
+
+    <!-- Chat Container -->
+    <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
+        
+        <!-- LEFT: Chat Messages (wider) -->
+        <div class="lg:col-span-3 glass-panel rounded-xl p-6 flex flex-col" style="height: 600px;">
+            <h3 class="text-sm font-mono text-slate-400 mb-4 uppercase tracking-wider">Messages</h3>
+            <div id="messages-container" class="space-y-3 flex-1 overflow-y-auto mb-4 p-4">
+                <!-- Messages will be rendered here -->
+            </div>
+
+            <!-- Message Input -->
+            <div class="border-t border-white/10 pt-4">
+                <div class="flex gap-2">
+                    <input 
+                        id="message-input" 
+                        type="text" 
+                        placeholder="Type a message..." 
+                        class="flex-1 p-3 rounded-lg bg-slate-800/50 text-white border border-slate-700 focus:border-purple-500 outline-none"
+                    >
+                    <button id="btn-send" class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-3 rounded-lg font-medium transition-colors">
+                        <i class="fa-solid fa-paper-plane"></i>
+                    </button>
+                </div>
+                <div id="content-warning" class="text-xs text-rose-400 mt-2 hidden"></div>
+            </div>
+        </div>
+
+        <!-- RIGHT: Participants -->
+        <div class="glass-panel rounded-xl p-6 flex flex-col">
+            <h3 class="text-sm font-mono text-slate-400 mb-4 uppercase tracking-wider">Participants</h3>
+            <div id="participants-list" class="space-y-3 flex-1 overflow-y-auto">
+                <!-- Participants will be listed here -->
+            </div>
+        </div>
+    </div>
+
+</main>
+
+<style>
+    .glass-panel {
+        background: rgba(15, 23, 42, 0.7);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(10px);
+    }
+
+    #messages-container::-webkit-scrollbar { width: 6px; }
+    #messages-container::-webkit-scrollbar-track { background: transparent; }
+    #messages-container::-webkit-scrollbar-thumb { background: #334155; border-radius: 10px; }
+    #messages-container::-webkit-scrollbar-thumb:hover { background: #475569; }
+
+    .message-bubble {
+        display: flex;
+        flex-direction: column;
+        margin-bottom: 10px;
+    }
+
+    .message-content {
+        background: rgba(31, 41, 55, 0.8);
+        color: #e5e7eb;
+        padding: 12px 16px;
+        border-radius: 16px;
+        border-bottom-left-radius: 4px;
+        max-width: 80%;
+        word-wrap: break-word;
+        border: 1px solid rgba(148, 163, 184, 0.1);
+    }
+
+    .message-username {
+        font-size: 0.75rem;
+        color: #94a3b8;
+        margin-bottom: 4px;
+        font-weight: 600;
+    }
+
+    .message-timestamp {
+        font-size: 0.65rem;
+        color: #64748b;
+        margin-top: 4px;
+    }
+
+    .message-image {
+        max-width: 100%;
+        max-height: 300px;
+        border-radius: 12px;
+        margin-top: 8px;
+        cursor: pointer;
+    }
+
+    .reactions-container {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 4px;
+        margin-top: 8px;
+    }
+
+    .reaction-btn {
+        background: rgba(148, 163, 184, 0.1);
+        border: 1px solid rgba(148, 163, 184, 0.2);
+        padding: 4px 8px;
+        border-radius: 12px;
+        cursor: pointer;
+        font-size: 0.875rem;
+        transition: all 0.2s;
+        font-family: 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji', sans-serif;
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        text-rendering: auto;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+    }
+
+    .reaction-btn:hover {
+        background: rgba(148, 163, 184, 0.2);
+    }
+
+    .reaction-btn.active {
+        background: rgba(168, 85, 247, 0.3);
+        border-color: rgba(168, 85, 247, 0.5);
+        color: #d8b4fe;
+    }
+
+    .content-flagged {
+        background: rgba(239, 68, 68, 0.1);
+        border-color: rgba(239, 68, 68, 0.3);
+        opacity: 0.7;
+    }
+
+    .participant-item {
+        padding: 8px 12px;
+        background: rgba(148, 163, 184, 0.05);
+        border-radius: 8px;
+        border: 1px solid rgba(148, 163, 184, 0.1);
+        font-size: 0.875rem;
+    }
+
+    .participant-online {
+        display: inline-block;
+        width: 8px;
+        height: 8px;
+        background: #10b981;
+        border-radius: 50%;
+        margin-right: 6px;
+    }
+</style>
+
+{% endblock %}
+{% block scripts %}
+<script src="/static/js/chat.js"></script>
+{% endblock %}

@@ -43,6 +43,10 @@ def signup():
     username = data.get('username')
     password = data.get('password')
     persona = data.get('persona')
+    age = data.get('age')
+    gender = data.get('gender')
+    hobbies = data.get('hobbies', [])
+    bio = data.get('bio', '')
 
     if not username or not password or not persona:
         return jsonify({"status": "error", "message": "username, password and persona required"}), 400
@@ -55,6 +59,10 @@ def signup():
         "username": username,
         "password_hash": pw_hash,
         "persona": persona,
+        "age": age,
+        "gender": gender,
+        "hobbies": hobbies,
+        "bio": bio,
         "xp": 0
     }
     users_col.insert_one(user)

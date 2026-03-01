@@ -4,8 +4,10 @@ from flask import Blueprint, request, jsonify
 import jwt
 import json
 from datetime import datetime, timezone
-from config import users_col, training_col, JWT_SECRET, JWT_ALGO, GEMINI_CLIENT
+from bson import ObjectId
+from config import users_col, training_col, JWT_SECRET, JWT_ALGO, GEMINI_CLIENT, chat_messages_col, chat_rooms_col
 from utils import extract_json_from_response
+from content_filter import contains_harmful_content, filter_message
 
 chat_bp = Blueprint('chat', __name__, url_prefix='/api/chat')
 
@@ -44,6 +46,9 @@ def evaluate():
     scenario = payload.get('scenario', '')
     starter = payload.get('starter', '')
     turn_count = payload.get('turn_count', 1)
+    pitch_duration = payload.get('pitchDuration', 0)
+    filler_count = payload.get('fillerCount', 0)
+    hesitation_count = payload.get('hesitationCount', 0)
 
     if not module or not user_msg:
         return jsonify({'status': 'error', 'message': 'module and user_message required'}), 400
@@ -140,6 +145,38 @@ RESPOND WITH ONLY VALID JSON. NO OTHER TEXT. STRICTLY JSON ONLY.
   "ai_response": "suggested continuation from partner"
 }}
 """,
+        
+        'module6': f"""You are a warm, encouraging evaluator helping neurodivergent kids build public speaking confidence.
+
+User's Pitch Transcript:
+\\"{user_msg}\\"
+
+Performance Metrics:
+- Pitch Duration: {pitch_duration} seconds
+- Filler Words (um/uh/like): {filler_count}
+- Hesitations (>1.5s pauses): {hesitation_count}
+
+IMPORTANT: Score generously and supportively. MINIMUM SCORE IS 60% unless the pitch is empty/gibberish.
+- 60-69%: Attempted the pitch with some filler words or hesitations - keep practicing!
+- 70-79%: Good effort! Used clear language with minimal distractions.
+- 80-100%: Excellent! Confident, clear, engaging delivery with minimal filler words.
+
+Be encouraging and focus on effort and improvement. Recognize that neurodivergent speakers often need practice to build confidence.
+
+XP Awards (minimum 25 for any attempt):
+- 25-40 XP: Completed pitch (60-69%)
+- 50-75 XP: Good performance (70-79%)
+- 80-100 XP: Excellent performance (80-100%)
+
+RESPOND WITH ONLY VALID JSON. NO OTHER TEXT. STRICTLY JSON ONLY.
+
+{{
+  "passed": boolean,
+  "score": number,
+  "xp": number,
+  "feedback": "encouraging feedback on their pitch delivery, acknowledging their effort"
+}}
+""",
     }
 
     if module not in prompts and not is_hint_response_turn:
@@ -210,3 +247,210 @@ def analyze_chat():
         "score": 85,
         "feedback": "Good job identifying the passive aggression!"
     })
+
+
+# ============================================
+# GROUP CHAT MESSAGING ENDPOINTS
+# ============================================
+
+def verify_token():
+    """Helper to verify JWT and return user. Returns (user, error_response) tuple."""
+    auth = request.headers.get('Authorization', '')
+    if not auth.startswith('Bearer '):
+        return None, (jsonify({'status': 'error', 'message': 'missing token'}), 401)
+    token = auth.split(' ', 1)[1]
+    try:
+        data = jwt.decode(token, JWT_SECRET, algorithms=[JWT_ALGO])
+    except Exception:
+        return None, (jsonify({'status': 'error', 'message': 'invalid token'}), 401)
+
+    user = users_col.find_one({'username': data.get('username')})
+    if not user:
+        return None, (jsonify({'status': 'error', 'message': 'user not found'}), 404)
+    
+    return user, None
+
+
+@chat_bp.route('/post-message', methods=['POST'])
+def post_message():
+    """Post a message to a chat room.
+    
+    Request JSON:
+    {
+        "room_id": "room_id",
+        "text": "message text",
+        "image_url": "optional image URL"
+    }
+    """
+    user, error = verify_token()
+    if error:
+        return error
+
+    payload = request.get_json() or {}
+    room_id = payload.get('room_id')
+    text = payload.get('text', '').strip()
+    image_url = payload.get('image_url', '')
+
+    if not room_id or (not text and not image_url):
+        return jsonify({'status': 'error', 'message': 'room_id and text or image_url required'}), 400
+
+    # Check for harmful content
+    has_harmful, found_words = contains_harmful_content(text)
+    
+    # Filter the message regardless
+    filtered_text = filter_message(text) if text else ''
+    
+    message = {
+        'room_id': room_id,
+        'username': user['username'],
+        'user_id': str(user.get('_id')),
+        'text': filtered_text,
+        'image_url': image_url,
+        'has_harmful_content': has_harmful,
+        'flagged_words': found_words or [],
+        'reactions': {},  # emoji: [list of usernames who reacted]
+        'timestamp': datetime.now(timezone.utc),
+        'edited': False
+    }
+    
+    result = chat_messages_col.insert_one(message)
+    message['_id'] = str(result.inserted_id)
+    
+    return jsonify({
+        'status': 'success',
+        'message': message,
+        'content_warning': 'This message contained unkind language and has been filtered.' if has_harmful else None
+    })
+
+
+@chat_bp.route('/get-messages', methods=['GET'])
+def get_messages():
+    """Get messages from a chat room.
+    
+    Query params:
+    - room_id: required
+    - limit: optional (default 50)
+    - skip: optional (default 0)
+    """
+    user, error = verify_token()
+    if error:
+        return error
+
+    room_id = request.args.get('room_id')
+    limit = int(request.args.get('limit', 50))
+    skip = int(request.args.get('skip', 0))
+    
+    if not room_id:
+        return jsonify({'status': 'error', 'message': 'room_id required'}), 400
+    
+    # Get messages
+    cursor = chat_messages_col.find({'room_id': room_id}) \
+        .sort('timestamp', 1) \
+        .skip(skip) \
+        .limit(limit)
+    
+    messages = []
+    for msg in cursor:
+        msg['_id'] = str(msg['_id'])
+        messages.append(msg)
+    
+    return jsonify({
+        'status': 'success',
+        'messages': messages,
+        'count': len(messages)
+    })
+
+
+@chat_bp.route('/react', methods=['POST'])
+def react_to_message():
+    """React to a message with an emoji.
+    
+    Request JSON:
+    {
+        "message_id": "message_id",
+        "emoji": "emoji string"
+    }
+    """
+    user, error = verify_token()
+    if error:
+        return error
+
+    payload = request.get_json() or {}
+    message_id = payload.get('message_id')
+    emoji = payload.get('emoji', '').strip()
+
+    if not message_id or not emoji:
+        return jsonify({'status': 'error', 'message': 'message_id and emoji required'}), 400
+
+    try:
+        msg = chat_messages_col.find_one({'_id': ObjectId(message_id)})
+        if not msg:
+            return jsonify({'status': 'error', 'message': 'message not found'}), 404
+    except Exception:
+        return jsonify({'status': 'error', 'message': 'invalid message_id'}), 400
+
+    # Update reaction - add user to emoji list or remove if already reacted
+    reactions = msg.get('reactions', {})
+    if emoji not in reactions:
+        reactions[emoji] = []
+    
+    username = user['username']
+    if username in reactions[emoji]:
+        # Remove reaction
+        reactions[emoji].remove(username)
+        if len(reactions[emoji]) == 0:
+            del reactions[emoji]
+    else:
+        # Add reaction
+        reactions[emoji].append(username)
+    
+    chat_messages_col.update_one(
+        {'_id': ObjectId(message_id)},
+        {'$set': {'reactions': reactions}}
+    )
+    
+    return jsonify({
+        'status': 'success',
+        'reactions': reactions
+    })
+
+
+@chat_bp.route('/image-reactions', methods=['GET'])
+def get_image_reactions():
+    """Get all reactions for images in a room.
+    
+    Query params:
+    - room_id: required
+    """
+    user, error = verify_token()
+    if error:
+        return error
+
+    room_id = request.args.get('room_id')
+    if not room_id:
+        return jsonify({'status': 'error', 'message': 'room_id required'}), 400
+    
+    # Get all messages with images and their reactions
+    cursor = chat_messages_col.find({
+        'room_id': room_id,
+        'image_url': {'$exists': True, '$ne': ''}
+    }).sort('timestamp', 1)
+    
+    images = []
+    for msg in cursor:
+        msg['_id'] = str(msg['_id'])
+        images.append({
+            'message_id': msg['_id'],
+            'username': msg['username'],
+            'image_url': msg['image_url'],
+            'text': msg.get('text', ''),
+            'reactions': msg.get('reactions', {}),
+            'timestamp': msg['timestamp']
+        })
+    
+    return jsonify({
+        'status': 'success',
+        'images': images,
+        'count': len(images)
+    })
+

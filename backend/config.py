@@ -32,6 +32,8 @@ client = MongoClient(MONGO_URI)
 db = client.social_sandbox
 users_col = db.users
 training_col = db.training_results
+chat_messages_col = db.chat_messages
+chat_rooms_col = db.chat_rooms
 
 # JWT config
 JWT_SECRET = os.environ.get('JWT_SECRET', 'dev-secret-minimum-32-bytes-long-987654')

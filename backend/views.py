@@ -7,6 +7,10 @@ views_bp = Blueprint('views', __name__)
 
 @views_bp.route('/')
 def index():
+    return render_template('marketing.html')
+
+@views_bp.route('/login')
+def login_page():
     return render_template('login.html')
 
 
@@ -63,3 +67,14 @@ def module7_page():
 @views_bp.route('/module8')
 def module8_page():
     return render_template('module8.html')
+
+
+@views_bp.route('/matching')
+def matching_page():
+    return render_template('matching.html')
+
+
+@views_bp.route('/chat')
+def chat_page():
+    return render_template('chat.html')
+

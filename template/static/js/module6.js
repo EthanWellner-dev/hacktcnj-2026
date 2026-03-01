@@ -95,7 +95,7 @@ if ('webkitSpeechRecognition' in window) {
 
 function checkFillerWords(text) {
     // Regex to find standalone filler words
-    const fillerRegex = /\b(um|uh|like|you know|basically)\b/gi;
+    const fillerRegex = /\b(um|umm|uh|yeah|like|ya know|you know|basically)\b/gi;
     const matches = text.match(fillerRegex);
     
     if (matches) {
@@ -292,7 +292,7 @@ async function analyzePitch() {
     transcriptBox.innerHTML += '<br><br><span class="text-cyan-400 animate-pulse">Sending to Gemini AI for evaluation...</span>';
     
     // Get the current user token for authentication
-    const token = localStorage.getItem('auth_token');
+    const token = localStorage.getItem('ss_token');
     if (!token) {
         feedbackText.innerText = "Error: Not authenticated. Please log in again.";
         feedbackPanel.classList.remove('hidden');
@@ -333,6 +333,8 @@ async function analyzePitch() {
             // The backend already updated XP, so we'll just display it
             if (xpGain > 0) {
                 console.log(`Awarded ${xpGain} XP for module 6 completion`);
+                // Render confetti on successful pitch
+                renderConfetti();
             }
         } else {
             feedbackText.innerText = data.message || "Unable to get feedback at this moment. Great effort!";

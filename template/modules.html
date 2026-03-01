@@ -3,8 +3,29 @@
 {% block content %}
 <div class="min-h-screen flex items-center justify-center p-6">
   <div class="w-full max-w-3xl glass p-6 md:p-10">
-    <h1 class="text-2xl font-semibold text-slate-100 mb-6">Module Directory</h1>
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <div class="flex items-center justify-between mb-6">
+      <h1 class="text-2xl font-semibold text-slate-100">Module Directory</h1>
+      <div class="flex gap-2">
+        <button onclick="showSection('core')" id="btn-core" class="px-4 py-2 rounded-lg font-medium transition-all bg-gradient-to-r from-cyan-500 to-blue-500 text-white">
+          Page 1
+        </button>
+        <button onclick="showSection('advanced')" id="btn-advanced" class="px-4 py-2 rounded-lg font-medium transition-all bg-slate-700 text-slate-300 hover:bg-slate-600">
+          Page 2
+        </button>
+      </div>
+    </div>
+
+    <div class="pb-5 pt-2 border-t border-white/10">
+      <a href="/dashboard" class="text-cyan-400 hover:text-cyan-300 underline transition-colors">
+        <i class="fa-solid fa-arrow-left mr-2"></i>Back to dashboard
+      </a>
+    </div>
+
+    <!-- Sections Wrapper -->
+    <div class="sections-wrapper">
+      <!-- Core Modules (1-8) -->
+      <div id="core-section" class="section-container active">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
       <!-- Module 1: Sarcasm Sweeper -->
       <a href="/module1" class="p-4 bg-slate-900/40 rounded-xl hover:bg-slate-800/60 transition-colors border border-white/5 hover:border-cyan-500/50">
         <div class="flex items-start gap-3">
@@ -85,7 +106,7 @@
           </div>
         </div>
       </a>
-      
+
       <!-- Module 8: The Masking Mirror -->
       <a href="/module8" class="p-4 bg-slate-900/40 rounded-xl hover:bg-slate-800/60 transition-colors border border-white/5 hover:border-cyan-500/50">
         <div class="flex items-start gap-3">
@@ -98,12 +119,212 @@
           </div>
         </div>
       </a>
+      </div>
     </div>
-    <div class="mt-8 pt-6 border-t border-white/10">
-      <a href="/dashboard" class="text-cyan-400 hover:text-cyan-300 underline transition-colors">
-        <i class="fa-solid fa-arrow-left mr-2"></i>Back to dashboard
-      </a>
+
+    <!-- Advanced Modules (9-15) -->
+    <div id="advanced-section" class="section-container hidden">
+      <div class="mb-4 p-4 bg-purple-900/20 border border-purple-500/30 rounded-lg">
+        <p class="text-sm text-purple-300"><i class="fa-solid fa-lock mr-2"></i>These modules have not been developed yet.</p>
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <!-- Module 9: The No Matrix (Locked) -->
+        <div class="p-4 bg-slate-900/20 rounded-xl border border-white/5 cursor-not-allowed locked-module">
+          <div class="flex items-start gap-3">
+            <div class="text-2xl text-slate-500 flex-shrink-0">
+              <i class="fa-solid fa-lock"></i>
+            </div>
+            <div class="flex-1">
+              <h2 class="font-medium text-slate-400">The No Matrix</h2>
+              <p class="text-xs text-slate-500 mt-2">Learn to set firm boundaries without guilt — declining unreasonable requests with professionalism</p>
+              <div class="inline-block bg-slate-800/50 text-slate-400 px-2 py-1 rounded text-xs mt-3 border border-slate-700">Coming Soon</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Module 10: The Credit Claimer (Locked) -->
+        <div class="p-4 bg-slate-900/20 rounded-xl border border-white/5 cursor-not-allowed locked-module">
+          <div class="flex items-start gap-3">
+            <div class="text-2xl text-slate-500 flex-shrink-0">
+              <i class="fa-solid fa-lock"></i>
+            </div>
+            <div class="flex-1">
+              <h2 class="font-medium text-slate-400">The Credit Claimer</h2>
+              <p class="text-xs text-slate-500 mt-2">Reclaim your ideas gracefully when coworkers take credit — self-advocacy without pettiness</p>
+              <div class="inline-block bg-slate-800/50 text-slate-400 px-2 py-1 rounded text-xs mt-3 border border-slate-700">Coming Soon</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Module 11: The Fixer's Fallacy (Locked) -->
+        <div class="p-4 bg-slate-900/20 rounded-xl border border-white/5 cursor-not-allowed locked-module">
+          <div class="flex items-start gap-3">
+            <div class="text-2xl text-slate-500 flex-shrink-0">
+              <i class="fa-solid fa-lock"></i>
+            </div>
+            <div class="flex-1">
+              <h2 class="font-medium text-slate-400">The Fixer's Fallacy</h2>
+              <p class="text-xs text-slate-500 mt-2">Master validation over solutions — listen deeply and validate emotions before offering advice</p>
+              <div class="inline-block bg-slate-800/50 text-slate-400 px-2 py-1 rounded text-xs mt-3 border border-slate-700">Coming Soon</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Module 12: The Name Drop (Locked) -->
+        <div class="p-4 bg-slate-900/20 rounded-xl border border-white/5 cursor-not-allowed locked-module">
+          <div class="flex items-start gap-3">
+            <div class="text-2xl text-slate-500 flex-shrink-0">
+              <i class="fa-solid fa-lock"></i>
+            </div>
+            <div class="flex-1">
+              <h2 class="font-medium text-slate-400">The Name Drop</h2>
+              <p class="text-xs text-slate-500 mt-2">Build instant rapport by remembering small details — attention to detail as social currency</p>
+              <div class="inline-block bg-slate-800/50 text-slate-400 px-2 py-1 rounded text-xs mt-3 border border-slate-700">Coming Soon</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Module 13: The Over-Talker (Locked) -->
+        <div class="p-4 bg-slate-900/20 rounded-xl border border-white/5 cursor-not-allowed locked-module">
+          <div class="flex items-start gap-3">
+            <div class="text-2xl text-slate-500 flex-shrink-0">
+              <i class="fa-solid fa-lock"></i>
+            </div>
+            <div class="flex-1">
+              <h2 class="font-medium text-slate-400">The Over-Talker</h2>
+              <p class="text-xs text-slate-500 mt-2">Politely interrupt rambling colleagues — timing and tact in chaotic group dynamics</p>
+              <div class="inline-block bg-slate-800/50 text-slate-400 px-2 py-1 rounded text-xs mt-3 border border-slate-700">Coming Soon</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Module 14: The Spotlight Shift (Locked) -->
+        <div class="p-4 bg-slate-900/20 rounded-xl border border-white/5 cursor-not-allowed locked-module">
+          <div class="flex items-start gap-3">
+            <div class="text-2xl text-slate-500 flex-shrink-0">
+              <i class="fa-solid fa-lock"></i>
+            </div>
+            <div class="flex-1">
+              <h2 class="font-medium text-slate-400">The Spotlight Shift</h2>
+              <p class="text-xs text-slate-500 mt-2">Bring talked-over voices back in — bystander intervention and inclusive leadership</p>
+              <div class="inline-block bg-slate-800/50 text-slate-400 px-2 py-1 rounded text-xs mt-3 border border-slate-700">Coming Soon</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Module 15: The Radical Candor Simulator (Locked) -->
+        <div class="p-4 bg-slate-900/20 rounded-xl border border-white/5 cursor-not-allowed locked-module">
+          <div class="flex items-start gap-3">
+            <div class="text-2xl text-slate-500 flex-shrink-0">
+              <i class="fa-solid fa-lock"></i>
+            </div>
+            <div class="flex-1">
+              <h2 class="font-medium text-slate-400">The Radical Candor Simulator</h2>
+              <p class="text-xs text-slate-500 mt-2">Deliver difficult feedback with care and clarity — personally caring but directly challenging</p>
+              <div class="inline-block bg-slate-800/50 text-slate-400 px-2 py-1 rounded text-xs mt-3 border border-slate-700">Coming Soon</div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </div>
+
+<style>
+  .sections-wrapper {
+    position: relative;
+    min-height: 500px;
+  }
+
+  .section-container {
+    opacity: 1;
+    transform: translateX(0);
+    transition: opacity 0.5s cubic-bezier(0.4, 0, 0.2, 1), transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    display: block;
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    width: 100%;
+  }
+
+  .section-container.hidden {
+    opacity: 0;
+    transform: translateX(100%);
+    pointer-events: none;
+  }
+
+  .section-container.hidden.slide-out {
+    transform: translateX(-100%);
+  }
+
+  .locked-module {
+    opacity: 0.65;
+    background: rgba(30, 41, 59, 0.15) !important;
+  }
+
+  .locked-module:hover {
+    background: rgba(30, 41, 59, 0.15) !important;
+    border-color: rgba(255, 255, 255, 0.05) !important;
+  }
+
+  #btn-core.active,
+  #btn-advanced.active {
+    background: linear-gradient(135deg, #06b6d4 0%, #3b82f6 100%);
+    color: white;
+  }
+
+  #btn-core:not(.active),
+  #btn-advanced:not(.active) {
+    background: rgba(71, 85, 105, 0.5);
+    color: #cbd5e1;
+  }
+
+  #btn-core:not(.active):hover,
+  #btn-advanced:not(.active):hover {
+    background: rgba(71, 85, 105, 0.7);
+  }
+</style>
+
+<script>
+  function showSection(section) {
+    const coreSection = document.getElementById('core-section');
+    const advancedSection = document.getElementById('advanced-section');
+    const btnCore = document.getElementById('btn-core');
+    const btnAdvanced = document.getElementById('btn-advanced');
+
+    if (section === 'core') {
+      // Hide advanced, show core
+      advancedSection.classList.add('slide-out');
+      advancedSection.classList.add('hidden');
+      
+      setTimeout(() => {
+        coreSection.classList.remove('hidden');
+        coreSection.classList.remove('slide-out');
+      }, 500);
+
+      btnCore.classList.add('active');
+      btnAdvanced.classList.remove('active');
+    } else if (section === 'advanced') {
+      // Hide core, show advanced
+      coreSection.classList.add('slide-out');
+      coreSection.classList.add('hidden');
+      
+      setTimeout(() => {
+        advancedSection.classList.remove('hidden');
+        advancedSection.classList.remove('slide-out');
+      }, 500);
+
+      btnAdvanced.classList.add('active');
+      btnCore.classList.remove('active');
+    }
+  }
+
+  // Initialize on load
+  document.addEventListener('DOMContentLoaded', () => {
+    document.getElementById('btn-core').classList.add('active');
+    document.getElementById('advanced-section').classList.add('hidden');
+  });
+</script>
+
 {% endblock %}

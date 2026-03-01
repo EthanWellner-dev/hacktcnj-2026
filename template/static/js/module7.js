@@ -10,7 +10,7 @@ let totalAnswered = 0;
 let isGameActive = false;
 let sessionStartTime = 0;
 let gameTimer = null;
-let timeRemaining = 60;
+let timeRemaining = 16; // 16 seconds for faster demo
 
 // --- DOM Elements ---
 const countdownOverlay = document.getElementById('countdown-overlay');
@@ -79,7 +79,7 @@ function initializeGame() {
     score = 0;
     correctCount = 0;
     totalAnswered = 0;
-    timeRemaining = 60;
+    timeRemaining = 16;
     
     // Start the timer
     startGameTimer();
@@ -89,7 +89,7 @@ function initializeGame() {
 }
 
 /**
- * 60-second countdown timer
+ * 16-second countdown timer
  */
 function startGameTimer() {
     gameTimer = setInterval(() => {
@@ -109,8 +109,8 @@ function updateTimerDisplay() {
     const seconds = Math.max(0, timeRemaining);
     timerText.textContent = `${seconds}s`;
     
-    // Update timer bar width (60 second max)
-    const percentageComplete = (60 - Math.max(0, timeRemaining)) / 60;
+    // Update timer bar width (16 second max)
+    const percentageComplete = (16 - Math.max(0, timeRemaining)) / 16;
     timerBar.style.width = `${(1 - percentageComplete) * 100}%`;
     
     // Change color as time runs out
@@ -149,7 +149,8 @@ function loadCard(card) {
         btn.querySelector('.choice-text').textContent = card.options[index];
         btn.dataset.index = index;
         btn.dataset.correct = (index === card.correctAnswerIndex);
-        btn.classList.remove('border-emerald-500', 'border-red-500', 'cursor-not-allowed');
+        btn.classList.remove('border-emerald-500', 'border-red-500', 'cursor-not-allowed', 'shadow-[0_0_20px_rgba(16,185,129,0.6)]', 'shadow-[0_0_20px_rgba(239,68,68,0.6)]');
+        btn.style.backgroundColor = ''; // Clear inline styles
         btn.disabled = false;
         
         // Attach click handler
@@ -181,14 +182,14 @@ function handleSelection(buttonEl, card) {
     totalAnswered++;
     
     // Calculate XP
-    let xpGain = 50; // Base XP for correct answer
+    let xpGain = 10; // Base XP for correct answer
     if (isCorrect) {
         correctCount++;
         buttonEl.classList.add('border-emerald-500', 'shadow-[0_0_20px_rgba(16,185,129,0.6)]');
         buttonEl.style.backgroundColor = 'rgba(16, 185, 129, 0.2)';
         
         // Bonus XP for speed (more time remaining = more bonus)
-        const speedBonus = Math.floor((timeRemaining / 60) * 30);
+        const speedBonus = Math.floor((timeRemaining / 16) * 30);
         xpGain += speedBonus;
         
         score += xpGain;
@@ -301,7 +302,7 @@ function showSummary(accuracy) {
     
     finalAccuracy.textContent = `${accuracy}%`;
     finalXP.textContent = `+${score}`;
-    cardsScored.textContent = `${correctCount}/10`;
+    cardsScored.textContent = `${correctCount}/${totalAnswered}`;
     
     // Generate summary based on performance
     let summaryMessage = '';
@@ -324,6 +325,8 @@ function showSummary(accuracy) {
     summaryScreen.style.opacity = '0';
     setTimeout(() => {
         summaryScreen.style.opacity = '1';
+        // Render confetti when summary appears
+        renderConfetti();
     }, 100);
 }
 

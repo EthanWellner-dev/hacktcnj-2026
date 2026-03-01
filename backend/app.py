@@ -10,6 +10,11 @@ from flask_cors import CORS
 app = Flask(__name__, static_folder='../template/static', template_folder='../template')
 CORS(app)  # allow all origins by default for local development
 
+# Suppress favicon 404 errors
+@app.route('/favicon.ico')
+def favicon():
+    return '', 204
+
 # Import all blueprints
 from auth import auth_bp
 from views import views_bp
@@ -33,4 +38,4 @@ app.register_blueprint(module7_bp)
 app.register_blueprint(module8_bp)
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run('127.0.0.1', port=5000, debug=True)

@@ -1,0 +1,613 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bridge Communications Co</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['Fira Code', 'monospace'],
+                    },
+                    colors: {
+                        cyber: {
+                            dark: '#0B0F19',
+                            card: 'rgba(20, 27, 45, 0.7)',
+                            border: 'rgba(56, 189, 248, 0.15)',
+                            glow: '#38BDF8',
+                            accent: '#818CF8',
+                            success: '#34D399',
+                            danger: '#F87171'
+                        }
+                    },
+                    animation: {
+                        'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                        'float': 'float 6s ease-in-out infinite',
+                    },
+                    keyframes: {
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0)' },
+                            '50%': { transform: 'translateY(-10px)' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        @keyframes twinkle {
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 1; }
+        }
+
+        @keyframes float-slow {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(20px); }
+        }
+
+        body {
+            background-color: #0a0e27;
+            color: #e8ecf1;
+            background-image: 
+                radial-gradient(2px 2px at 20px 30px, #eee, rgba(0,0,0,0)),
+                radial-gradient(2px 2px at 60px 70px, #fff, rgba(0,0,0,0)),
+                radial-gradient(1px 1px at 50px 50px, #fff, rgba(0,0,0,0)),
+                radial-gradient(1px 1px at 130px 80px, #fff, rgba(0,0,0,0)),
+                radial-gradient(2px 2px at 90px 10px, #fff, rgba(0,0,0,0));
+            background-repeat: repeat;
+            background-size: 200px 200px;
+            background-attachment: fixed;
+            position: relative;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(ellipse at 20% 50%, rgba(138, 43, 226, 0.1) 0%, transparent 50%),
+                        radial-gradient(ellipse at 80% 80%, rgba(65, 105, 225, 0.1) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        .glass {
+            background: rgba(20, 24, 45, 0.6);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(100, 150, 255, 0.2);
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+        }
+
+        .glass-hover:hover {
+            border-color: rgba(138, 43, 226, 0.8);
+            box-shadow: 0 0 30px rgba(138, 43, 226, 0.3);
+            transform: translateY(-4px);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .text-gradient {
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-image: linear-gradient(to right, #38BDF8, #818CF8);
+        }
+
+        .grid-bg {
+            background: none;
+        }
+
+        .reveal {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.8s cubic-bezier(0.5, 0, 0, 1);
+        }
+
+        .reveal.active {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0B0F19;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #334155;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #475569;
+        }
+    </style>
+</head>
+<body class="antialiased overflow-x-hidden selection:bg-cyber-glow selection:text-cyber-dark">
+
+    <!-- Navigation -->
+    <nav class="fixed w-full z-50 glass border-b-0 border-t-0 border-x-0 !border-b-cyber-border transition-all duration-300" id="navbar">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-20">
+                <div class="flex items-center gap-2">
+                    <img src="{{ url_for('static', filename='images/HackTCNJ_Logo_1.png') }}" alt="Bridge Communications Co" class="h-10 w-10">
+                    <span class="font-bold text-xl tracking-tight text-white">Bridge<span class="text-cyber-glow">Communications</span></span>
+                </div>
+                <div class="hidden md:block">
+                    <div class="ml-10 flex items-baseline space-x-8">
+                        <a href="#inspiration" class="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition-colors">The "Why"</a>
+                        <a href="#gyms" class="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition-colors">Training Gyms</a>
+                        <a href="#architecture" class="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition-colors">Architecture</a>
+                        <a href="/login" class="bg-blue-600/20 text-cyber-glow border border-blue-500/50 hover:bg-blue-600/40 px-5 py-2 rounded-full text-sm font-semibold transition-all shadow-[0_0_15px_rgba(56,189,248,0.3)]">Get Started</a>
+                    </div>
+                </div>
+                <!-- Mobile menu button -->
+                <div class="md:hidden flex items-center">
+                    <button class="text-gray-300 hover:text-white focus:outline-none">
+                        <i class="fas fa-bars text-2xl"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="relative pt-32 pb-20 lg:pt-48 lg:pb-32 overflow-hidden">
+        <div class="absolute inset-0 grid-bg -z-10"></div>
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
+            <div class="lg:grid lg:grid-cols-12 lg:gap-16 items-center">
+                
+                <div class="lg:col-span-6 text-center lg:text-left reveal active">
+                    <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full glass border border-cyber-accent/30 text-cyber-accent text-xs font-semibold uppercase tracking-wider mb-6">
+                        <span class="w-2 h-2 rounded-full bg-cyan-400 animate-pulse"></span>
+                        Welcome to the Sandbox
+                    </div>
+                    <h1 class="text-5xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight mb-6">
+                        Build Better <br/>
+                        <span class="text-gradient">Conversations</span>
+                    </h1>
+                    <p class="text-lg sm:text-xl text-gray-300 mb-8 max-w-2xl mx-auto lg:mx-0">
+                        A gamified training sandbox powered by AI. Master communication, empathy, and emotional intelligence through real-world scenarios.
+                    </p>
+                    <div class="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
+                        <a href="{{ url_for('views.modules_page') }}" class="px-8 py-4 rounded-lg bg-gradient-to-r from-cyan-500 to-blue-600 text-white font-bold text-lg hover:from-cyan-400 hover:to-blue-500 transition-all shadow-[0_0_20px_rgba(56,189,248,0.4)] flex items-center justify-center gap-2">
+                            Enter Sandbox <i class="fas fa-arrow-right text-sm"></i>
+                        </a>
+                        <a href="#architecture" class="px-8 py-4 rounded-lg glass font-semibold text-gray-300 hover:text-white transition-all flex items-center justify-center gap-2">
+                            <i class="fas fa-code"></i> View Dev Docs
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Terminal Graphic -->
+                <div class="lg:col-span-6 mt-16 lg:mt-0 reveal active">
+                    <div class="glass rounded-xl overflow-hidden shadow-2xl border border-gray-700/50 animate-float relative">
+                        <!-- Terminal Header -->
+                        <div class="bg-gray-900/80 px-4 py-3 border-b border-gray-800 flex items-center gap-2">
+                            <div class="w-3 h-3 rounded-full bg-red-500"></div>
+                            <div class="w-3 h-3 rounded-full bg-yellow-500"></div>
+                            <div class="w-3 h-3 rounded-full bg-green-500"></div>
+                            <div class="ml-4 text-xs text-gray-500 font-mono">social_debugger.exe</div>
+                        </div>
+                        <!-- Terminal Body -->
+                        <div class="p-6 font-mono text-sm leading-relaxed text-gray-300 h-80 overflow-y-auto" id="terminal-body">
+                            <div class="text-cyber-glow mb-2">> Initiating Conversation Analysis...</div>
+                            <div class="mb-2"><span class="text-gray-500">[14:02:11]</span> <span class="text-purple-400">Target (Coworker):</span> "I thought you said you'd have the report done by noon."</div>
+                            <div class="mb-4"><span class="text-gray-500">[14:02:15]</span> <span class="text-blue-400">User:</span> "Fine, whatever. I'll do it right now."</div>
+                            
+                            <div class="border-l-2 border-cyber-danger pl-4 mb-4 bg-red-900/10 py-2">
+                                <span class="text-cyber-danger font-bold">ERROR: Passive-aggression detected.</span><br>
+                                <span class="text-gray-400 text-xs">Vocal tone indicates high defensiveness (Confidence: 94%). Dismissive language used.</span>
+                            </div>
+
+                            <div class="text-cyber-glow mb-2">> Calculating XP Penalty... <span class="text-red-400">-50 XP</span></div>
+                            <div class="text-cyber-success mb-2">> Suggesting De-Escalation Protocol:</div>
+                            <div class="text-gray-400 italic">"I apologize for the delay. I ran into an issue with the data, but I am prioritizing it now and will have it to you by 2 PM."</div>
+                            
+                            <div class="mt-4 flex items-center gap-2">
+                                <span class="text-cyber-glow">></span> <span class="w-2 h-4 bg-cyber-glow animate-pulse"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- The Inspiration Section -->
+    <section id="inspiration" class="py-24 relative z-10">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center max-w-3xl mx-auto mb-16 reveal">
+                <h2 class="text-cyber-glow font-mono text-sm font-bold tracking-widest uppercase mb-2">01 // The Inspiration</h2>
+                <h3 class="text-3xl md:text-4xl font-bold mb-6">Why This Matters<span class="text-gradient">.</span></h3>
+                <p class="text-gray-300 text-lg leading-relaxed">
+                    A whole generation grew up hyper-connected yet profoundly disconnected. We can debug code in milliseconds, but we can't read a room. That changes today.
+                </p>
+            </div>
+
+            <div class="grid md:grid-cols-2 gap-12 items-center reveal">
+                <div class="space-y-6">
+                    <div class="glass p-6 rounded-xl border-l-4 border-l-green-400">
+                        <h4 class="text-xl font-bold text-white mb-2"><i class="fas fa-code text-green-400 mr-2"></i> We debug code flawlessly...</h4>
+                        <p class="text-gray-300 text-sm">IDEs, linters, test suites. We have tools for everything digital.</p>
+                    </div>
+                    <div class="glass p-6 rounded-xl border-l-4 border-l-orange-400">
+                        <h4 class="text-xl font-bold text-white mb-2"><i class="fas fa-handshake text-orange-400 mr-2"></i> ...but not human connection.</h4>
+                        <p class="text-gray-300 text-sm">Until now. Social Sandbox is the debugger for your communication skills.</p>
+                    </div>
+                </div>
+                <div class="glass p-8 rounded-2xl relative overflow-hidden">
+                    <div class="absolute top-0 right-0 w-32 h-32 bg-cyber-accent/20 blur-[50px] rounded-full"></div>
+                    <h3 class="text-2xl font-bold mb-4">Your Trainer</h3>
+                    <p class="text-gray-300 mb-6 leading-relaxed">
+                        Social Sandbox isn't a boring corporate training. It's real. Stressful. Effective. You'll practice in safe, judgment-free scenarios powered by multimodal AI.
+                    </p>
+                    <p class="text-white font-semibold">
+                        8 modules. 3 gyms. Infinite possibilities to become a better communicator.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- The Gyms (Official Modules) -->
+    <section id="gyms" class="py-24 bg-gray-900/50 relative z-10 border-y border-white/5">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center max-w-3xl mx-auto mb-20 reveal">
+                <h2 class="text-cyber-glow font-mono text-sm font-bold tracking-widest uppercase mb-2">02 // Official Module Directory</h2>
+                <h3 class="text-3xl md:text-5xl font-bold mb-6">Three Pillars. <br/>Eight High-Stakes Scenarios.</h3>
+                <p class="text-gray-400 text-lg">
+                    Users earn XP by completing modules, unlocking higher-stakes scenarios as they level up.
+                </p>
+            </div>
+
+            <!-- GYM 1 -->
+            <div class="mb-20 reveal">
+                <div class="flex items-center gap-4 mb-8 border-b border-gray-800 pb-4">
+                    <div class="w-12 h-12 rounded-lg bg-blue-500/20 text-blue-400 flex items-center justify-center text-2xl border border-blue-500/30">
+                        <i class="fas fa-mobile-screen"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-2xl font-bold text-white">GYM 1: The Digital Comm Suite</h3>
+                        <p class="text-blue-400 text-sm">Focus: Asynchronous text communication and reading subtext.</p>
+                    </div>
+                </div>
+                <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <!-- Module 1 -->
+                    <div class="glass glass-hover p-6 rounded-xl flex flex-col h-full relative overflow-hidden group">
+                        <div class="absolute top-0 right-0 bg-gray-800 text-xs font-mono px-2 py-1 rounded-bl-lg text-gray-400 border-b border-l border-gray-700">MOD_01</div>
+                        <div class="text-cyber-danger text-3xl mb-4"><i class="fas fa-bomb"></i></div>
+                        <h4 class="text-lg font-bold text-white mb-2">Sarcasm Sweeper</h4>
+                        <p class="text-gray-400 text-sm flex-grow">A digital minefield. Scan pre-written group chats and flag messages that contain hidden passive-aggression, sarcasm, or underlying hostility.</p>
+                    </div>
+                    <!-- Module 2 -->
+                    <div class="glass glass-hover p-6 rounded-xl flex flex-col h-full relative overflow-hidden group">
+                        <div class="absolute top-0 right-0 bg-gray-800 text-xs font-mono px-2 py-1 rounded-bl-lg text-gray-400 border-b border-l border-gray-700">MOD_02</div>
+                        <div class="text-cyan-400 text-3xl mb-4"><i class="fas fa-handshake"></i></div>
+                        <h4 class="text-lg font-bold text-white mb-2">The Icebreaker</h4>
+                        <p class="text-gray-400 text-sm flex-grow">First impressions matter. Initiate a cold text conversation with an AI stranger and establish a common interest within 5 messages.</p>
+                    </div>
+                    <!-- Module 3 -->
+                    <div class="glass glass-hover p-6 rounded-xl flex flex-col h-full relative overflow-hidden group">
+                        <div class="absolute top-0 right-0 bg-gray-800 text-xs font-mono px-2 py-1 rounded-bl-lg text-gray-400 border-b border-l border-gray-700">MOD_03</div>
+                        <div class="text-yellow-400 text-3xl mb-4"><i class="fas fa-door-open"></i></div>
+                        <h4 class="text-lg font-bold text-white mb-2">Hint Hunter</h4>
+                        <p class="text-gray-400 text-sm flex-grow">Read the room. The AI starts dropping subtle cues that it wants to end the conversation. You must gracefully close the chat.</p>
+                    </div>
+                    <!-- Module 4 -->
+                    <div class="glass glass-hover p-6 rounded-xl flex flex-col h-full relative overflow-hidden group">
+                        <div class="absolute top-0 right-0 bg-gray-800 text-xs font-mono px-2 py-1 rounded-bl-lg text-gray-400 border-b border-l border-gray-700">MOD_04</div>
+                        <div class="text-green-400 text-3xl mb-4"><i class="fas fa-table-tennis-paddle-ball"></i></div>
+                        <h4 class="text-lg font-bold text-white mb-2">The Ping-Pong Protocol</h4>
+                        <p class="text-gray-400 text-sm flex-grow">Conversational stamina. Keep a chat alive for 6 turns. Dead-end replies or closed-ended questions lose XP.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- GYM 2 -->
+            <div class="mb-20 reveal">
+                <div class="flex items-center gap-4 mb-8 border-b border-gray-800 pb-4">
+                    <div class="w-12 h-12 rounded-lg bg-purple-500/20 text-purple-400 flex items-center justify-center text-2xl border border-purple-500/30">
+                        <i class="fas fa-microphone-lines"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-2xl font-bold text-white">GYM 2: The Vocal Sandbox</h3>
+                        <p class="text-purple-400 text-sm">Focus: Real-time verbal communication and conflict de-escalation.</p>
+                    </div>
+                </div>
+                <div class="grid md:grid-cols-2 gap-6">
+                    <!-- Module 5 -->
+                    <div class="glass glass-hover p-6 rounded-xl flex flex-col h-full relative overflow-hidden group border-l-4 border-l-red-500">
+                        <div class="absolute top-0 right-0 bg-gray-800 text-xs font-mono px-2 py-1 rounded-bl-lg text-gray-400 border-b border-l border-gray-700">MOD_05</div>
+                        <div class="flex items-center gap-4 mb-4">
+                            <div class="text-red-400 text-3xl"><i class="fas fa-fire-extinguisher"></i></div>
+                            <div>
+                                <h4 class="text-xl font-bold text-white">Tone Check (The De-Escalator)</h4>
+                                <span class="text-xs font-mono text-red-400 bg-red-900/30 px-2 py-1 rounded">UNLOCKED AT 5,000 XP</span>
+                            </div>
+                        </div>
+                        <p class="text-gray-400 text-sm flex-grow">Pressure testing. Hold a button to verbally respond to a stressful, hostile prompt (e.g., an angry boss voiced by ElevenLabs). Set a firm boundary without losing your cool. Evaluates vocal tone, shakiness, and defensiveness.</p>
+                    </div>
+                    <!-- Module 6 -->
+                    <div class="glass glass-hover p-6 rounded-xl flex flex-col h-full relative overflow-hidden group border-l-4 border-l-purple-500">
+                        <div class="absolute top-0 right-0 bg-gray-800 text-xs font-mono px-2 py-1 rounded-bl-lg text-gray-400 border-b border-l border-gray-700">MOD_06</div>
+                        <div class="flex items-center gap-4 mb-4">
+                            <div class="text-purple-400 text-3xl"><i class="fas fa-chart-line"></i></div>
+                            <h4 class="text-xl font-bold text-white">The Pitch (Confidence Calibration)</h4>
+                        </div>
+                        <p class="text-gray-400 text-sm flex-grow">Overcoming the stutter. Verbally introduce yourself or pitch an idea. The system tracks pauses, hesitations, and filler words ("um", "uh") to calculate a live Confidence Score.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- GYM 3 -->
+            <div class="reveal">
+                <div class="flex items-center gap-4 mb-8 border-b border-gray-800 pb-4">
+                    <div class="w-12 h-12 rounded-lg bg-emerald-500/20 text-emerald-400 flex items-center justify-center text-2xl border border-emerald-500/30">
+                        <i class="fas fa-face-smile-beam"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-2xl font-bold text-white">GYM 3: The Facial Gym</h3>
+                        <p class="text-emerald-400 text-sm">Focus: Cognitive load, computer vision, and non-verbal cues.</p>
+                    </div>
+                </div>
+                <div class="grid md:grid-cols-2 gap-6">
+                    <!-- Module 7 -->
+                    <div class="glass glass-hover p-6 rounded-xl flex flex-col h-full relative overflow-hidden group">
+                        <div class="absolute top-0 right-0 bg-gray-800 text-xs font-mono px-2 py-1 rounded-bl-lg text-gray-400 border-b border-l border-gray-700">MOD_07</div>
+                        <div class="text-emerald-400 text-3xl mb-4"><i class="fas fa-brain"></i></div>
+                        <h4 class="text-xl font-bold text-white mb-2">The Emotion Matrix</h4>
+                        <p class="text-gray-400 text-sm flex-grow">A high-speed multimodal flashcard game. Users are shown complex human facial expressions paired with subtle, conflicting audio cues (e.g., a smile paired with a frustrated sigh). Quickly identify the correct underlying emotion combining both visual and auditory subtext.</p>
+                    </div>
+                    <!-- Module 8 -->
+                    <div class="glass glass-hover p-6 rounded-xl flex flex-col h-full relative overflow-hidden group">
+                        <div class="absolute top-0 right-0 bg-gray-800 text-xs font-mono px-2 py-1 rounded-bl-lg text-gray-400 border-b border-l border-gray-700">MOD_08</div>
+                        <div class="text-teal-400 text-3xl mb-4"><i class="fas fa-camera"></i></div>
+                        <h4 class="text-xl font-bold text-white mb-2">The Masking Mirror</h4>
+                        <p class="text-gray-400 text-sm flex-grow">Situational facial control. Given a scenario ("Listen to your coworker's boring story"), use your webcam to physically hold the socially appropriate expression (e.g., "Neutral/Attentive") for 3 continuous seconds without your face dropping.</p>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- Architecture & Build Section -->
+    <section id="architecture" class="py-24 relative z-10">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center max-w-3xl mx-auto mb-16 reveal">
+                <h2 class="text-cyber-glow font-mono text-sm font-bold tracking-widest uppercase mb-2">03 // System Architecture</h2>
+                <h3 class="text-3xl md:text-4xl font-bold mb-6">How We Built It</h3>
+                <p class="text-gray-400">
+                    A highly scalable, modular architecture built from the ground up in just a few hours.
+                </p>
+            </div>
+
+            <div class="grid lg:grid-cols-3 gap-8 reveal">
+                <!-- Frontend -->
+                <div class="glass p-8 rounded-2xl border-t-4 border-t-[#42b883]">
+                    <div class="flex items-center justify-between mb-6">
+                        <h4 class="text-xl font-bold text-white">Frontend</h4>
+                        <i class="fab fa-vuejs text-3xl text-[#42b883]"></i>
+                    </div>
+                    <ul class="space-y-4 text-sm text-gray-300">
+                        <li class="flex items-start"><i class="fas fa-check text-cyber-glow mt-1 mr-3"></i> <span>Built with <strong>Vue.js</strong> and <strong>Tailwind CSS</strong>.</span></li>
+                        <li class="flex items-start"><i class="fas fa-check text-cyber-glow mt-1 mr-3"></i> <span>Custom "Glassmorphism / Cyber-Corporate" UI.</span></li>
+                        <li class="flex items-start"><i class="fas fa-check text-cyber-glow mt-1 mr-3"></i> <span>UI driven by a <strong>master JSON configuration object</strong>, allowing instant swapping of rulesets without rewriting components.</span></li>
+                    </ul>
+                </div>
+
+                <!-- Backend -->
+                <div class="glass p-8 rounded-2xl border-t-4 border-t-[#47A248]">
+                    <div class="flex items-center justify-between mb-6">
+                        <h4 class="text-xl font-bold text-white">Backend & DB</h4>
+                        <i class="fas fa-database text-3xl text-[#47A248]"></i>
+                    </div>
+                    <ul class="space-y-4 text-sm text-gray-300">
+                        <li class="flex items-start"><i class="fas fa-check text-cyber-glow mt-1 mr-3"></i> <span>Powered by <strong>MongoDB Atlas</strong>.</span></li>
+                        <li class="flex items-start"><i class="fas fa-check text-cyber-glow mt-1 mr-3"></i> <span>Stores user profiles, XP, and detailed session logs.</span></li>
+                        <li class="flex items-start"><i class="fas fa-check text-cyber-glow mt-1 mr-3"></i> <span>Flask for backend logic and Jinja for dynamic rendering.</span></li>
+                    </ul>
+                </div>
+
+                <!-- AI Stack -->
+                <div class="glass p-8 rounded-2xl border-t-4 border-t-blue-500">
+                    <div class="flex items-center justify-between mb-6">
+                        <h4 class="text-xl font-bold text-white">The AI Brain</h4>
+                        <div class="flex gap-2">
+                            <i class="fas fa-robot text-3xl text-blue-500"></i>
+                            <i class="fas fa-wave-square text-3xl text-purple-500"></i>
+                        </div>
+                    </div>
+                    <ul class="space-y-4 text-sm text-gray-300">
+                        <li class="flex items-start"><i class="fas fa-check text-cyber-glow mt-1 mr-3"></i> <span><strong>Gemini API:</strong> Parses subtext, returns structured JSON feedback, and analyzes raw .webm audio blobs to judge vocal inflection.</span></li>
+                        <li class="flex items-start"><i class="fas fa-check text-cyber-glow mt-1 mr-3"></i> <span><strong>ElevenLabs:</strong> Custom antagonist voices with tweaked stability and similarity_boost parameters for realistic aggression.</span></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Challenges & Accomplishments -->
+    <section class="py-24 bg-gray-900/30 relative z-10 border-t border-white/5">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid lg:grid-cols-2 gap-16">
+                
+                <!-- Challenges -->
+                <div class="reveal">
+                    <h3 class="text-3xl font-bold mb-8 flex items-center gap-3">
+                        <i class="fas fa-triangle-exclamation text-yellow-500"></i> Challenges Overcome
+                    </h3>
+                    <div class="space-y-6">
+                        <div class="glass p-5 rounded-lg border-l-2 border-yellow-500/50">
+                            <h5 class="font-bold text-white mb-1">The Web Speech API State</h5>
+                            <p class="text-sm text-gray-400">Struggled with InvalidStateError crashes from rapid mic clicks. Built a bulletproof state-tracking wrapper using try/catch blocks around browser async audio engines.</p>
+                        </div>
+                        <div class="glass p-5 rounded-lg border-l-2 border-yellow-500/50">
+                            <h5 class="font-bold text-white mb-1">Audio Blob Routing</h5>
+                            <p class="text-sm text-gray-400">Capturing raw audio via MediaRecorder and precisely formatting MIME-types for Gemini's native multimodal audio endpoints required intense data handling.</p>
+                        </div>
+                        <div class="glass p-5 rounded-lg border-l-2 border-yellow-500/50">
+                            <h5 class="font-bold text-white mb-1">The Hackathon Clock</h5>
+                            <p class="text-sm text-gray-400">Went from ideation at 12:00 PM to 8 fully functional, highly polished UI modules mapped to complex logic by 7:00 AM. Scope management was critical.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Accomplishments -->
+                <div class="reveal delay-100">
+                    <h3 class="text-3xl font-bold mb-8 flex items-center gap-3">
+                        <i class="fas fa-trophy text-yellow-400"></i> Accomplishments
+                    </h3>
+                    <div class="space-y-6">
+                        <div class="glass p-5 rounded-lg border-l-2 border-yellow-400">
+                            <h5 class="font-bold text-white mb-1">The Vue.js Config Pattern</h5>
+                            <p class="text-sm text-gray-400">Gym 1 is infinitely scalable. We can add 100 new text scenarios simply by adding JSON objects. The frontend dynamically adapts inputs based on config.</p>
+                        </div>
+                        <div class="glass p-5 rounded-lg border-l-2 border-yellow-400">
+                            <h5 class="font-bold text-white mb-1">Zero-Latency Multimodal</h5>
+                            <p class="text-sm text-gray-400">For Module 7, we pre-generated ElevenLabs audio and coupled it with static images to test multimodal perception blazingly fast without live LLM delays.</p>
+                        </div>
+                        <div class="glass p-5 rounded-lg border-l-2 border-yellow-400">
+                            <h5 class="font-bold text-white mb-1">Actionable, Diagnostic Feedback</h5>
+                            <p class="text-sm text-gray-400">Our LLM prompts are perfectly tuned. It doesn't just say "Good job," it says: <em>"Threat neutralized. 'No rush' combined with 'biggest client' indicates passive-aggression."</em></p>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- What We Learned -->
+    <section class="py-20 relative z-10">
+        <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center reveal">
+            <h2 class="text-cyber-glow font-mono text-sm font-bold tracking-widest uppercase mb-6">04 // Retrospective</h2>
+            <h3 class="text-3xl font-bold mb-10">What We Learned</h3>
+            
+            <div class="grid sm:grid-cols-3 gap-6 text-left">
+                <div class="glass p-6 rounded-xl">
+                    <i class="fas fa-volume-high text-2xl text-cyber-accent mb-4"></i>
+                    <p class="text-sm text-gray-300">We learned how powerful native audio processing is compared to standard Speech-to-Text. Hearing the "shake" in a voice changes the entire context.</p>
+                </div>
+                <div class="glass p-6 rounded-xl">
+                    <i class="fas fa-code-branch text-2xl text-cyber-accent mb-4"></i>
+                    <p class="text-sm text-gray-300">We mastered handling complex state management in Vue.js for real-time applications involving asynchronous browser APIs.</p>
+                </div>
+                <div class="glass p-6 rounded-xl">
+                    <i class="fas fa-gamepad text-2xl text-cyber-accent mb-4"></i>
+                    <p class="text-sm text-gray-300">We learned that designing "stressful" UX requires a delicate balance of gamification (neon colors, XP bars) so the user feels challenged, not discouraged.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="border-t border-gray-800 bg-black/50 pt-16 pb-8 relative z-10">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex flex-col md:flex-row justify-between items-center mb-8">
+                <div class="flex items-center gap-2 mb-4 md:mb-0">
+                    <img src="{{ url_for('static', filename='images/HackTCNJ_Logo_1.png') }}" alt="Bridge Communications Co" class="h-10 w-12">
+                    <span class="font-bold text-xl tracking-tight text-white">Bridge<span class="text-cyber-glow">Communications</span></span>
+                </div>
+                <div class="flex gap-6">
+                    <a href="#" class="text-gray-500 hover:text-white transition-colors"><i class="fab fa-github text-xl"></i></a>
+                    <a href="#" class="text-gray-500 hover:text-white transition-colors"><i class="fab fa-dev text-xl"></i></a>
+                    <a href="#" class="text-gray-500 hover:text-white transition-colors"><i class="fab fa-twitter text-xl"></i></a>
+                </div>
+            </div>
+            <div class="text-center md:text-left text-gray-400 text-sm border-t border-gray-800 pt-8 flex flex-col md:flex-row justify-between">
+                <p>&copy; 2026 Bridge Communications Co. Built for connection.</p>
+                <p class="mt-2 md:mt-0 font-mono text-xs text-gray-500">Debugging human interaction, one conversation at a time.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts for interactivity -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Navbar blur effect on scroll
+            const navbar = document.getElementById('navbar');
+            if (navbar) {
+                window.addEventListener('scroll', function() {
+                    if (window.scrollY > 20) {
+                        navbar.classList.add('bg-cyber-dark/80', 'backdrop-blur-md', 'shadow-lg');
+                        navbar.classList.remove('border-transparent');
+                    } else {
+                        navbar.classList.remove('bg-cyber-dark/80', 'backdrop-blur-md', 'shadow-lg');
+                        navbar.classList.add('border-transparent');
+                    }
+                });
+            }
+
+            // Scroll Reveal Animation
+            const revealElements = document.querySelectorAll('.reveal');
+            
+            const revealCallback = function(entries, observer) {
+                entries.forEach(function(entry) {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('active');
+                    }
+                });
+            };
+
+            const revealOptions = {
+                threshold: 0.15,
+                rootMargin: '0px 0px -50px 0px'
+            };
+
+            const revealObserver = new IntersectionObserver(revealCallback, revealOptions);
+            
+            revealElements.forEach(function(el) {
+                revealObserver.observe(el);
+            });
+
+            // Terminal auto-scroll logic (simulating live feed)
+            const terminal = document.getElementById('terminal-body');
+            if (terminal) {
+                const messages = [
+                    { text: "> Target heart rate elevated...", color: "text-gray-500", delay: 3000 },
+                    { text: "> Loading next scenario...", color: "text-cyber-glow", delay: 5000 },
+                    { text: "[14:05:00] Initiating 'The Pitch' module...", color: "text-purple-400", delay: 7000 },
+                    { text: "> Microphones active. Listening for filler words.", color: "text-gray-400", delay: 8500 }
+                ];
+
+                let cumulativeDelay = 0;
+                messages.forEach(function(msg) {
+                    cumulativeDelay += msg.delay;
+                    setTimeout(function() {
+                        const div = document.createElement('div');
+                        // Removed template literals for safer parsing
+                        div.className = msg.color + ' mb-2 text-sm font-mono opacity-0 transition-opacity duration-500';
+                        div.innerHTML = msg.text;
+                        
+                        // Insert before the blinking cursor safely
+                        const cursorLine = terminal.lastElementChild;
+                        if (cursorLine) {
+                            terminal.insertBefore(div, cursorLine);
+                        } else {
+                            terminal.appendChild(div);
+                        }
+                        
+                        // Fade in and scroll
+                        setTimeout(function() {
+                            div.classList.remove('opacity-0');
+                        }, 50);
+                        terminal.scrollTop = terminal.scrollHeight;
+                    }, cumulativeDelay);
+                });
+            }
+        });
+    </script>        
+</body>
+</html>

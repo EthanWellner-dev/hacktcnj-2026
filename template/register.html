@@ -1,21 +1,86 @@
 {% extends 'base.html' %}
 {% block title %}Register &mdash; Social Sandbox{% endblock %}
 {% block content %}
-<div class="min-h-screen flex items-center justify-center">
-  <div class="w-full max-w-md p-6 glass">
-    <h1 class="text-2xl font-semibold text-slate-100 mb-4">Create Account</h1>
-    <form id="register-form" class="space-y-3">
-      <input id="username" placeholder="Username" class="w-full p-3 rounded-lg" required>
-      <input id="password" type="password" placeholder="Password" class="w-full p-3 rounded-lg" required>
+<div class="min-h-screen flex items-center justify-center p-6">
+  <div class="w-full max-w-2xl p-6 glass">
+    <h1 class="text-2xl font-semibold text-slate-100 mb-2">Create Your Profile</h1>
+    <p class="text-slate-400 text-sm mb-6">Tell us about yourself so we can match you with the right people</p>
+    <form id="register-form" class="space-y-4">
+      <!-- Basic Info -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <input id="username" placeholder="Username" class="w-full p-3 rounded-lg" required>
+        <input id="password" type="password" placeholder="Password" class="w-full p-3 rounded-lg" required>
+      </div>
+
+      <!-- Age and Gender -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <input id="age" type="number" placeholder="Age" class="w-full p-3 rounded-lg" min="13" max="120">
+        <select id="gender" class="w-full p-3 rounded-lg">
+          <option class="form-option" value="" disabled selected>Gender</option>
+          <option class="form-option" value="male">Male</option>
+          <option class="form-option" value="female">Female</option>
+          <option class="form-option" value="non-binary">Non-binary</option>
+          <option class="form-option" value="prefer-not-to-say">Prefer not to say</option>
+        </select>
+      </div>
+
+      <!-- Personality Type -->
       <select id="persona" class="w-full p-3 rounded-lg" required>
-        <option class="form-option" value="" disabled selected>Select personality</option>
+        <option class="form-option" value="" disabled selected>Select personality type</option>
         <option class="form-option" value="job_seeker">Job Seeker</option>
         <option class="form-option" value="awkward_texter">Awkward Texter</option>
         <option class="form-option" value="conflict_avoider">Conflict Avoider</option>
       </select>
+
+      <!-- Interests/Hobbies -->
+      <div>
+        <label class="text-sm text-slate-400 block mb-2">Hobbies & Interests (select all that apply)</label>
+        <div class="grid grid-cols-2 md:grid-cols-3 gap-2">
+          <label class="flex items-center space-x-2 cursor-pointer">
+            <input type="checkbox" name="hobbies" value="gaming" class="hobby-checkbox">
+            <span class="text-sm text-slate-300">Gaming</span>
+          </label>
+          <label class="flex items-center space-x-2 cursor-pointer">
+            <input type="checkbox" name="hobbies" value="music" class="hobby-checkbox">
+            <span class="text-sm text-slate-300">Music</span>
+          </label>
+          <label class="flex items-center space-x-2 cursor-pointer">
+            <input type="checkbox" name="hobbies" value="sports" class="hobby-checkbox">
+            <span class="text-sm text-slate-300">Sports</span>
+          </label>
+          <label class="flex items-center space-x-2 cursor-pointer">
+            <input type="checkbox" name="hobbies" value="reading" class="hobby-checkbox">
+            <span class="text-sm text-slate-300">Reading</span>
+          </label>
+          <label class="flex items-center space-x-2 cursor-pointer">
+            <input type="checkbox" name="hobbies" value="cooking" class="hobby-checkbox">
+            <span class="text-sm text-slate-300">Cooking</span>
+          </label>
+          <label class="flex items-center space-x-2 cursor-pointer">
+            <input type="checkbox" name="hobbies" value="art" class="hobby-checkbox">
+            <span class="text-sm text-slate-300">Art</span>
+          </label>
+          <label class="flex items-center space-x-2 cursor-pointer">
+            <input type="checkbox" name="hobbies" value="tech" class="hobby-checkbox">
+            <span class="text-sm text-slate-300">Technology</span>
+          </label>
+          <label class="flex items-center space-x-2 cursor-pointer">
+            <input type="checkbox" name="hobbies" value="travel" class="hobby-checkbox">
+            <span class="text-sm text-slate-300">Travel</span>
+          </label>
+          <label class="flex items-center space-x-2 cursor-pointer">
+            <input type="checkbox" name="hobbies" value="fitness" class="hobby-checkbox">
+            <span class="text-sm text-slate-300">Fitness</span>
+          </label>
+        </div>
+      </div>
+
+      <!-- Bio -->
+      <textarea id="bio" placeholder="Tell us a bit about yourself (optional)" class="w-full p-3 rounded-lg" rows="3" maxlength="500"></textarea>
+
       <div class="flex items-center justify-between">
-        <button type="submit" class="btn-neon px-4 py-2 rounded-xl">Sign up</button>
-        <a href="/" class="text-sm text-slate-400 underline">Back to login</a>
+        <button type="submit" class="btn-neon px-4 py-2 rounded-xl">Create Account</button>
+        <a href="/login" class="text-sm text-slate-400 underline">Back to login</a>
       </div>
     </form>
     <div id="status" class="mt-3 text-sm"></div>
